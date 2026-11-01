@@ -226,10 +226,8 @@ async function extractAudioFromVideo(file,title,author){
  setStatus('Đang nạp video vào bộ nhớ xử lý…');
  engine.FS('writeFile',inputName,new Uint8Array(await file.arrayBuffer()));
  setStatus('Đang tách track âm thanh bằng stream copy — không mã hóa lại…');
- let exitCode;
- try{exitCode=await engine.run('-i',inputName,'-map','0:a:0','-vn','-c:a','copy','-f','ipod',outputName)}
+ try{await engine.run('-i',inputName,'-map','0:a:0','-vn','-c:a','copy','-f','ipod',outputName)}
  catch(e){throw new Error('Không tách được track audio ở chế độ giữ nguyên dữ liệu. Video có thể không chứa audio hoặc codec/container không tương thích; app sẽ không tự re-encode vì bạn yêu cầu giữ nguyên chất lượng.')}
- if(exitCode!==0)throw new Error('FFmpeg không thể copy nguyên track audio. Video có thể không có âm thanh hoặc codec không tương thích với M4A.');
  let raw;
  try{raw=engine.FS('readFile',outputName)}catch(e){throw new Error('Không tìm thấy file audio sau khi xử lý.')}
  if(!raw||!raw.length)throw new Error('Track audio được trích xuất rỗng.');
