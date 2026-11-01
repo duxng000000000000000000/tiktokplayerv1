@@ -248,7 +248,7 @@ async function extractAudioFromVideo(file,title,author){
     break;
    }catch(e){lastError=e;try{engine.FS('unlink',out.name)}catch(ignore){}}
   }
-  if(!savedBlob)throw new Error('Không thể trích xuất âm thanh. Video có thể không có track audio hoặc file bị lỗi.');
+  if(!savedBlob){const detail=lastError&&(lastError.message||String(lastError));throw new Error('Không thể trích xuất âm thanh.'+(detail?' Chi tiết FFmpeg: '+detail.slice(0,260):' Không có thông tin lỗi chi tiết.')+' File: '+(file.type||'không rõ định dạng')+', '+(file.size/1024/1024).toFixed(1)+' MB.');}
   const id=await saveSong(title||cleanFileName(file.name),author||'TikTok video',savedBlob);
   loadSavedSongs();const index=songs.findIndex(s=>s.id===id);if(index>=0)playSongAtIndex(index);
   setStatus('Đã thêm nhạc vào playlist.');
