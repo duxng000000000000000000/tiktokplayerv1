@@ -225,22 +225,38 @@ async function extractAudioFromVideo(file,title,author){
  if(file.size>150*1024*1024)throw new Error('Video vượt quá 150 MB. Hãy chọn file nhỏ hơn để tránh hết bộ nhớ trình duyệt.');
  setStatus('Đang xử lý video…');
  const engine=await loadFFmpeg();
- const inputName='source_video.mp4',outputName='extracted_audio.m4a';
- try{engine.FS('unlink',inputName)}catch(e){}
- try{engine.FS('unlink',outputName)}catch(e){}
- setStatus('Đang nạp video…');
- engine.FS('writeFile',inputName,new Uint8Array(await file.arrayBuffer()));
- setStatus('Đang tách âm thanh…');
- try{await engine.run('-i',inputName,'-map','0:a:0','-vn','-c:a','copy','-f','ipod',outputName)}
- catch(e){throw new Error('Không tách được track audio ở chế độ giữ nguyên dữ liệu. Video có thể không chứa audio hoặc codec/container không tương thích; app sẽ không tự re-encode vì bạn yêu cầu giữ nguyên chất lượng.')}
- let raw;
- try{raw=engine.FS('readFile',outputName)}catch(e){throw new Error('Không tìm thấy file audio sau khi xử lý.')}
- if(!raw||!raw.length)throw new Error('Track audio được trích xuất rỗng.');
- const blob=new Blob([raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength)],{type:'audio/mp4'});
- const id=await saveSong(title||cleanFileName(file.name),author||'TikTok video',blob);
- loadSavedSongs();const index=songs.findIndex(s=>s.id===id);if(index>=0)playSongAtIndex(index);
- try{engine.FS('unlink',inputName);engine.FS('unlink',outputName)}catch(e){}
- return blob;
+ const inputName='source_video.mp4';
+ const outputs=[
+  {name:'extracted_audio.m4a',args:['-c:a','copy','-f','ipod'],type:'audio/mp4',label:'giữ nguyên chất lượng'},
+  {name:'extracted_audio.webm',args:['-c:a','copy','-f','webm'],type:'audio/webm',label:'giữ nguyên chất lượng'},
+  {name:'extracted_audio_aac.m4a',args:['-c:a','aac','-b:a','192k','-f','ipod'],type:'audio/mp4',label:'AAC 192 kbps'}
+ ];
+ let savedBlob=null,lastError=null;
+ try{
+  try{engine.FS('unlink',inputName)}catch(e){}
+  for(const out of outputs){try{engine.FS('unlink',out.name)}catch(e){}}
+  setStatus('Đang nạp video…');
+  engine.FS('writeFile',inputName,new Uint8Array(await file.arrayBuffer()));
+  for(let i=0;i<outputs.length;i++){
+   const out=outputs[i];
+   setStatus(i===0?'Đang tách âm thanh…':i===1?'Đang thử định dạng khác…':'Đang chuyển sang AAC…');
+   try{
+    await engine.run('-i',inputName,'-map','0:a:0','-vn',...out.args,out.name);
+    const raw=engine.FS('readFile',out.name);
+    if(!raw||!raw.length)throw new Error('Track audio rỗng.');
+    savedBlob=new Blob([raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength)],{type:out.type});
+    break;
+   }catch(e){lastError=e;try{engine.FS('unlink',out.name)}catch(ignore){}}
+  }
+  if(!savedBlob)throw new Error('Không thể trích xuất âm thanh. Video có thể không có track audio hoặc file bị lỗi.');
+  const id=await saveSong(title||cleanFileName(file.name),author||'TikTok video',savedBlob);
+  loadSavedSongs();const index=songs.findIndex(s=>s.id===id);if(index>=0)playSongAtIndex(index);
+  setStatus('Đã thêm nhạc vào playlist.');
+  return savedBlob;
+ }finally{
+  try{engine.FS('unlink',inputName)}catch(e){}
+  for(const out of outputs){try{engine.FS('unlink',out.name)}catch(e){}}
+ }
 }
 async function extractFromLocalFile(file){
  if(!file)return;
