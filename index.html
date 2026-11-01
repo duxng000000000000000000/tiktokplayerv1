@@ -89,7 +89,7 @@ let db=null, songs=[], currentIndex=-1, shuffle=false, repeat=0, sleepTimer=null
 const $=id=>document.getElementById(id);
 function setStatus(message,error=false){const el=$('extractStatus');el.classList.toggle('error',error);el.lastElementChild.textContent=message}
 function formatTime(v){if(!Number.isFinite(v))return '00:00';const m=Math.floor(v/60),s=Math.floor(v%60);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
-function setBusy(value){extractionBusy=value;$('extractBtn').disabled=value;$('videoFile').disabled=value;$('extractBtn').textContent=value?'Đang xử lý…':'Lấy âm thanh từ TikTok';}
+function setBusy(value){extractionBusy=value;$('extractBtn').disabled=value;$('extractBtn').textContent=value?'Đang xử lý…':'Lấy âm thanh từ TikTok';}
 function clearStoreOnce(database,storeName){
  return new Promise(resolve=>{
   if(!database.objectStoreNames.contains(storeName)){resolve();return}
@@ -276,18 +276,22 @@ async function extractAudioFromVideo(file,title,author){
 }
 async function extractFromLocalFile(file){
  if(!file)return;
- if(extractionBusy){setStatus('Đang xử lý một tác vụ khác. Hãy đợi tác vụ hiện tại kết thúc rồi thử lại.',true);return;}
+ const isAudio=file.type.startsWith('audio/');
+ if(extractionBusy&&!isAudio){setStatus('Đang xử lý video/TikTok. Hãy đợi tác vụ đó kết thúc rồi thử lại video khác.',true);return;}
  $('selectedFile').textContent=file.name;
+ if(isAudio){
+  try{
+   const id=await saveSong(cleanFileName(file.name),'File trên thiết bị',file);
+   await loadSavedSongs();const index=songs.findIndex(s=>s.id===id);if(index>=0)playSongAtIndex(index);
+   setStatus('Đã thêm nhạc vào playlist.');
+  }catch(e){setStatus(e.message||'Không thể thêm tệp.',true)}
+  finally{$('videoFile').value=''}
+  return;
+ }
  setBusy(true);
  try{
-  if(file.type.startsWith('audio/')){
-   const id=await saveSong(cleanFileName(file.name), 'File trên thiết bị', file);
-   loadSavedSongs();const index=songs.findIndex(s=>s.id===id);if(index>=0)playSongAtIndex(index);
-   setStatus('Đã thêm nhạc vào playlist.');
-  }else{
-   await extractAudioFromVideo(file,cleanFileName(file.name),'Video trên thiết bị');
-   setStatus('Đã tách âm thanh từ video và thêm vào playlist.');
-  }
+  await extractAudioFromVideo(file,cleanFileName(file.name),'Video trên thiết bị');
+  setStatus('Đã tách âm thanh từ video và thêm vào playlist.');
  }catch(e){setStatus(e.message||'Không thể thêm tệp.',true)}
  finally{setBusy(false);$('videoFile').value=''}
 }
