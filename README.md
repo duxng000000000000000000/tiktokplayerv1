@@ -1,24 +1,24 @@
-# Afterglow — TikTok Audio Player
+# Afterglow — TikTok Video Player
 
-A lightweight, static browser audio player with three calm themes (Midnight, Moss, Dusk).
+A lightweight, static TikTok video player with three calm themes (Midnight, Moss, Dusk).
 
 ## Features
 
-- Extracts the audio stream from a TikTok **video URL** using the video's playback URL. It does not use TikTok's separate attached-music field.
-- Extracts audio from a local video file when the browser cannot fetch the remote video.
-- Uses FFmpeg.wasm with `-c:a copy` to copy the original audio stream into an M4A container without re-encoding. If the source codec cannot be copied into that container, extraction fails instead of silently converting the audio.
-- Offline playlist stored locally in IndexedDB, play/pause, seek, previous/next, shuffle, repeat-one/repeat-all, sleep timer, and Media Session controls.
-- Uses a single-thread FFmpeg core, so GitHub Pages does not need `SharedArrayBuffer` or cross-origin isolation headers.
-- Clears the old MusicBaby audio store and the new Afterglow library once on the next app load, removing imported test tracks. It does not copy old playlist items into the new library. The new interface uses generated CSS artwork and has no personal-photo references.
+- Embeds public TikTok video and photo/slideshow posts with TikTok's official Embed Player.
+- Supports full TikTok post URLs and attempts to resolve shortened share links through TikTok oEmbed, with TikWM as a fallback resolver.
+- Saves a personal playlist of TikTok post links in IndexedDB. The playlist remains in the same browser on the same device after reload.
+- Play/pause, seek, previous/next, shuffle, repeat-one/repeat-all, sleep timer, and Media Session action handlers.
+- Midnight, Moss, and Dusk themes.
+- No video downloading, audio extraction, FFmpeg, or local audio files. An internet connection is required to stream TikTok posts.
+
+## Embed Player limitations
+
+Playback, availability, autoplay, and background behavior are controlled by TikTok and the browser. Private, removed, restricted, or non-embeddable posts may not play. Browsers can block autoplay; use the play button inside the TikTok player when that happens.
+
+TikTok's documented Embed Player messaging API supports play, pause, and seek, and reports playback state and current time. It does not document a command for setting an arbitrary volume level, so the sleep timer pauses playback rather than fading the volume gradually. Media Session controls are best-effort and may vary by browser and device.
+
+The playlist stores TikTok post IDs and URLs, not downloaded media. It is not an offline video library.
 
 ## Deploy on GitHub Pages
 
 In the repository settings, open **Pages**, choose **Deploy from a branch**, select **main** and **/(root)**, then save. Open the Pages URL over HTTPS.
-
-## Audio extraction notes
-
-TikTok playback links and third-party API responses can change. A browser may also block cross-origin video downloads (CORS). In that case, download a video you own or have permission to use and select it under **Local video**. FFmpeg.wasm then extracts the audio locally in the browser.
-
-Stream copy preserves the encoded audio data; it cannot improve the source quality. Not all audio codecs can be placed into an M4A container without re-encoding, so this build reports an error rather than changing the audio.
-
-The first extraction loads the single-thread FFmpeg WebAssembly engine from a public CDN and may take a little time. The single-thread core avoids the `SharedArrayBuffer` requirement that blocked the earlier build on GitHub Pages. Video processing is memory-intensive; files above 150 MB are rejected to reduce browser crashes.
