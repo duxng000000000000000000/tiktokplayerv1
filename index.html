@@ -277,31 +277,98 @@ async function extractFromLocalFile(file){
  finally{setBusy(false);$('videoFile').value=''}
 }
 $('videoFile').addEventListener('change',e=>extractFromLocalFile(e.target.files&&e.target.files[0]));
+function absoluteMediaUrl(value){
+ if(!value||typeof value!=='string')return '';
+ try{return new URL(value,'https://www.tikwm.com').href}catch(e){return ''}
+}
+function isVideoPayload(blob,contentType){
+ const type=(contentType||blob.type||'').toLowerCase();
+ if(type.startsWith('audio/')||type.startsWith('image/'))return false;
+ if(type.startsWith('video/'))return true;
+ return blob.slice(4,8).text().then(x=>x==='ftyp').catch(()=>false);
+}
+async function fetchFirstValidMedia(urls,kind){
+ const errors=[];
+ for(const url of [...new Set(urls.filter(Boolean))]){
+  try{
+   const response=await fetch(url);
+   if(!response.ok)throw new Error('HTTP '+response.status);
+   const blob=await response.blob();
+   if(!blob.size)throw new Error('Tệp rỗng');
+   const type=response.headers.get('content-type')||blob.type||'';
+   if(kind==='video'){
+    if(!(await isVideoPayload(blob,type)))throw new Error('Nguồn trả về '+(type||'không rõ định dạng')+', không phải video');
+   }else if(!type.toLowerCase().startsWith('audio/')){
+    const sig=await blob.slice(0,3).text();
+    if(!(type.toLowerCase().includes('mpeg')||sig==='ID3'||(blob.size>2&&new Uint8Array(await blob.slice(0,2).arrayBuffer())[0]===0xff)))throw new Error('Nguồn không phải audio ('+(type||'không rõ định dạng')+')');
+   }
+   return {blob,type,url};
+  }catch(e){errors.push(e.message||String(e))}
+ }
+ throw new Error('Không tải được '+(kind==='video'?'video':'track nhạc')+'. '+errors.slice(0,3).join(' | '));
+}
+async function saveTikTokMusic(urls,title,author){
+ const media=await fetchFirstValidMedia(urls,'audio');
+ const blob=new Blob([media.blob],{type:media.type||media.blob.type||'audio/mpeg'});
+ const id=await saveSong(title||'TikTok music',author||'TikTok',blob);
+ loadSavedSongs();const index=songs.findIndex(s=>s.id===id);if(index>=0)playSongAtIndex(index);
+ return blob;
+}
 async function extractFromTikTok(){
  if(extractionBusy){setStatus('Đang xử lý một tác vụ khác. Hãy đợi tác vụ hiện tại kết thúc rồi thử lại.',true);return;}
  const url=$('tiktokUrl').value.trim();
  if(!url)return setStatus('Bạn hãy dán link TikTok trước.',true);
- if(!/^https?:\/\/(www\.)?(vm\.tiktok\.com|vt\.tiktok\.com|m\.tiktok\.com|tiktok\.com)\//i.test(url))return setStatus('Link không giống URL TikTok hợp lệ.',true);
+ if(!/^https?:\\/\\/(www\\.)?(vm\\.tiktok\\.com|vt\\.tiktok\\.com|m\\.tiktok\\.com|tiktok\\.com)\\//i.test(url))return setStatus('Link không giống URL TikTok hợp lệ.',true);
  setBusy(true);
  try{
-  setStatus('Đang lấy thông tin video TikTok…');
+  setStatus('Đang nhận dạng bài TikTok…');
   const api='https://www.tikwm.com/api/?url='+encodeURIComponent(url);
-  const apiResponse=await fetch(api,{method:'GET'});
-  if(!apiResponse.ok)throw new Error('Dịch vụ lấy thông tin video không phản hồi. Bạn có thể chọn file video đã tải về ở mục Local video.');
+  const apiResponse=await fetch(api);
+  if(!apiResponse.ok)throw new Error('Dịch vụ TikTok không phản hồi. Hãy thử lại hoặc chọn file đã tải về.');
   const json=await apiResponse.json();
-  if(json.code!==0||!json.data)throw new Error(json.msg||'Không lấy được video. Video có thể riêng tư, đã bị gỡ hoặc API hiện không hỗ trợ.');
-  const d=json.data;
-  const videoUrl=d.hdplay||d.play||d.wmplay;
-  if(!videoUrl)throw new Error('API không trả về đường dẫn video. Không dùng trường music vì đó là track nhạc gắn kèm, không phải audio trộn trong video.');
-  const videoResponse=await fetch(videoUrl);
-  if(!videoResponse.ok)throw new Error('Không tải được luồng video từ trình duyệt (có thể bị CORS chặn). Hãy tải video bạn có quyền sử dụng về máy rồi chọn Local video; app vẫn sẽ tách audio trực tiếp từ file đó.');
-  const videoBlob=await videoResponse.blob();
-  if(!videoBlob.size)throw new Error('Video trả về rỗng.');
-  const file=new File([videoBlob],'tiktok-video.mp4',{type:videoBlob.type||'video/mp4'});
-  await extractAudioFromVideo(file,d.title||'TikTok video audio',(d.author&&d.author.nickname)||'TikTok video');
-  $('tiktokUrl').value='';
-  setStatus('Đã trích xuất audio từ chính video và lưu offline — không lấy track music riêng.');
- }catch(e){setStatus(e.message||'Có lỗi khi lấy video TikTok.',true)}
+  if(json.code!==0||!json.data)throw new Error(json.msg||'Không lấy được bài đăng. Bài có thể riêng tư, bị gỡ hoặc API tạm thời không hỗ trợ.');
+  const d=json.data, info=d.music_info||{};
+  const isPhoto=/\\/photo\\//i.test(url)||((Array.isArray(d.images)&&d.images.length>0)||String(d.type||'').toLowerCase()==='photo');
+  const title=d.title||info.title||'TikTok audio';
+  const author=(d.author&&d.author.nickname)||info.author||'TikTok';
+  const musicUrls=[absoluteMediaUrl(info.play),absoluteMediaUrl(d.music)];
+  if(isPhoto){
+   setStatus('Bài ảnh/slideshow: đang lấy track nhạc gắn với bài đăng…');
+   await saveTikTokMusic(musicUrls,title,author);
+   $('tiktokUrl').value='';
+   setStatus('Đã lưu nhạc của bài ảnh vào playlist offline.');
+   return;
+  }
+  const videoUrls=[absoluteMediaUrl(d.hdplay),absoluteMediaUrl(d.play),absoluteMediaUrl(d.wmplay)];
+  let videoBlob=null,videoType='';
+  try{
+   setStatus('Đang tải video chất lượng cao…');
+   const media=await fetchFirstValidMedia(videoUrls,'video');
+   videoBlob=media.blob;videoType=media.type;
+  }catch(videoError){
+   if(musicUrls.some(Boolean)){
+    setStatus('Không lấy được luồng video. Đang thử track nhạc gốc của bài…');
+    await saveTikTokMusic(musicUrls,title,author);
+    $('tiktokUrl').value='';
+    setStatus('Đã lưu track nhạc TikTok. Không lấy được audio trộn trong video nên đã dùng track gốc làm phương án dự phòng.');
+    return;
+   }
+   throw videoError;
+  }
+  const file=new File([videoBlob],'tiktok-video.'+(videoType.toLowerCase().includes('webm')?'webm':'mp4'),{type:videoType||'video/mp4'});
+  try{
+   await extractAudioFromVideo(file,title,author);
+   $('tiktokUrl').value='';
+   setStatus('Đã tách audio trực tiếp từ video chất lượng cao và lưu offline.');
+  }catch(extractError){
+   if(musicUrls.some(Boolean)){
+    setStatus('Video không cho tách audio. Đang dùng track nhạc gốc làm phương án dự phòng…');
+    await saveTikTokMusic(musicUrls,title,author);
+    $('tiktokUrl').value='';
+    setStatus('Đã lưu track nhạc TikTok làm dự phòng vì không tách được audio từ video.');
+   }else throw extractError;
+  }
+ }catch(e){setStatus(e.message||'Không thể lấy nhạc từ bài TikTok này.',true)}
  finally{setBusy(false)}
 }
 $('extractBtn').addEventListener('click',extractFromTikTok);
