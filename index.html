@@ -176,7 +176,7 @@ function updateMediaSession(song){
 function togglePlayPause(){if(currentIndex===-1&&songs.length){playSongAtIndex(0);return}if(!audio.src)return;if(audio.paused)audio.play().catch(()=>{});else audio.pause()}
 function playNext(){
  if(!songs.length)return;
- if(shuffle){let next=songs.length>1?currentIndex:-1;while(next===currentIndex)next=Math.floor(Math.random()*songs.length);playSongAtIndex(next);return}
+ if(shuffle){if(songs.length===1){playSongAtIndex(0);return}let next=currentIndex;while(next===currentIndex)next=Math.floor(Math.random()*songs.length);playSongAtIndex(next);return}
  if(currentIndex<songs.length-1)playSongAtIndex(currentIndex+1);else if(repeat===2)playSongAtIndex(0);
 }
 function playPrev(){if(!songs.length)return;if(audio.currentTime>3){audio.currentTime=0;return}if(currentIndex>0)playSongAtIndex(currentIndex-1);else playSongAtIndex(songs.length-1)}
