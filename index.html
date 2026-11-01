@@ -225,7 +225,7 @@ async function isAudioPayload(blob,contentType){
  if(type.startsWith('audio/'))return true;
  const head=new Uint8Array(await blob.slice(0,16).arrayBuffer());
  const ascii=(start,end)=>String.fromCharCode(...head.slice(start,end));
- if(ascii(0,3)==='ID3'||ascii(0,4)==='OggS'||ascii(0,4)==='RIFF')return true;
+ if(ascii(0,3)==='ID3'||ascii(0,4)==='OggS'||(ascii(0,4)==='RIFF'&&ascii(8,12)==='WAVE'))return true;
  if(ascii(4,8)==='ftyp'&&type.includes('audio'))return true;
  if(head.length>1&&head[0]===0xff&&(head[1]&0xe0)===0xe0)return true;
  return false;
