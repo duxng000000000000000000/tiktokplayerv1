@@ -145,8 +145,8 @@ function deletePost(id){
   await loadPosts();renderPlaylist();
  };
 }
-function getPlayerUrl(id){
- const params=new URLSearchParams({controls:'1',progress_bar:'1',play_button:'1',volume_control:'1',fullscreen_button:'1',timestamp:'1',loop:'0',autoplay:'0',music_info:'1',description:'0',rel:'0',native_context_menu:'0'});
+function getPlayerUrl(id,autoplay){
+ const params=new URLSearchParams({controls:'1',progress_bar:'1',play_button:'1',volume_control:'1',fullscreen_button:'1',timestamp:'1',loop:'0',autoplay:autoplay?'1':'0',music_info:'1',description:'0',rel:'0',native_context_menu:'0'});
  return 'https://www.tiktok.com/player/v1/'+encodeURIComponent(id)+'?'+params.toString();
 }
 function playPostAt(index,autoplay){
@@ -154,7 +154,7 @@ function playPostAt(index,autoplay){
  currentIndex=index;const post=posts[index];currentPostId=post.postId;playerReady=false;pendingPlay=!!autoplay;isPlaying=false;currentTime=0;duration=0;resetProgress();
  $('songTitle').textContent=post.title||'TikTok video';$('songArtist').textContent=post.author||'TikTok';
  $('videoStage').classList.add('has-player');
- frame.src=getPlayerUrl(post.postId);
+ frame.src=getPlayerUrl(post.postId,!!autoplay);
  renderPlaylist();updatePlayButton();updateMediaSession(post);
  setStatus('Đang tải TikTok Player…');
 }
