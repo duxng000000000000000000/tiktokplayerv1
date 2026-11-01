@@ -220,9 +220,24 @@ async function loadFFmpeg(){
  try{return await ffmpegLoadPromise}catch(e){ffmpegLoadPromise=null;throw e}
 }
 function cleanFileName(name){return (name||'tiktok-video').replace(/\.[^.]+$/,'').replace(/[\\/:*?"<>|]+/g,' ').trim().slice(0,90)||'tiktok-video'}
+async function isAudioPayload(blob,contentType){
+ const type=(contentType||blob.type||'').toLowerCase();
+ if(type.startsWith('audio/'))return true;
+ const head=new Uint8Array(await blob.slice(0,16).arrayBuffer());
+ const ascii=(start,end)=>String.fromCharCode(...head.slice(start,end));
+ if(ascii(0,3)==='ID3'||ascii(0,4)==='OggS'||ascii(0,4)==='RIFF')return true;
+ if(ascii(4,8)==='ftyp'&&type.includes('audio'))return true;
+ if(head.length>1&&head[0]===0xff&&(head[1]&0xe0)===0xe0)return true;
+ return false;
+}
 async function extractAudioFromVideo(file,title,author){
- if(!file||!file.size)throw new Error('Video không hợp lệ hoặc có dung lượng bằng 0.');
- if(file.type&&file.type.startsWith('audio/'))throw new Error('Nguồn nhận được là tệp âm thanh ('+file.type+'), không phải video. TikTok có thể đã trả về luồng audio thay vì video; hãy tải video về máy rồi chọn file video.');
+ if(!file||!file.size)throw new Error('Tệp không hợp lệ hoặc có dung lượng bằng 0.');
+ if(await isAudioPayload(file,file.type)){
+  const id=await saveSong(title||cleanFileName(file.name),author||'Audio có sẵn',file);
+  loadSavedSongs();const index=songs.findIndex(s=>s.id===id);if(index>=0)playSongAtIndex(index);
+  setStatus('Nguồn đã là audio. Đã lưu trực tiếp, không cần chuyển mã.');
+  return file;
+ }
  if(file.size>150*1024*1024)throw new Error('Video vượt quá 150 MB. Hãy chọn file nhỏ hơn để tránh hết bộ nhớ trình duyệt.');
  setStatus('Đang xử lý video…');
  const engine=await loadFFmpeg();
@@ -247,7 +262,7 @@ async function extractAudioFromVideo(file,title,author){
     if(!raw||!raw.length)throw new Error('Track audio rỗng.');
     savedBlob=new Blob([raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength)],{type:out.type});
     break;
-   }catch(e){lastError=e;try{engine.FS('unlink',out.name)}catch(ignore){}}
+   }catch(e){lastError=e;try{engine.FS('unlink',out.name)}catch(ignore){} if(/can only run one command at a time/i.test(e.message||String(e))){try{engine.exit()}catch(ignore){} ffmpeg=null;ffmpegLoadPromise=null;throw new Error('FFmpeg vẫn đang bận từ tác vụ trước đó. Bộ xử lý đã được đặt lại; hãy thử lại sau vài giây.');}}
   }
   if(!savedBlob){const detail=lastError&&(lastError.message||String(lastError));throw new Error('Không thể trích xuất âm thanh.'+(detail?' Chi tiết FFmpeg: '+detail.slice(0,260):' Không có thông tin lỗi chi tiết.')+' File: '+(file.type||'không rõ định dạng')+', '+(file.size/1024/1024).toFixed(1)+' MB.');}
   const id=await saveSong(title||cleanFileName(file.name),author||'TikTok video',savedBlob);
@@ -281,11 +296,13 @@ function absoluteMediaUrl(value){
  if(!value||typeof value!=='string')return '';
  try{return new URL(value,'https://www.tikwm.com').href}catch(e){return ''}
 }
-function isVideoPayload(blob,contentType){
+async function isVideoPayload(blob,contentType){
  const type=(contentType||blob.type||'').toLowerCase();
- if(type.startsWith('audio/')||type.startsWith('image/'))return false;
+ if(type.startsWith('image/')||await isAudioPayload(blob,contentType))return false;
  if(type.startsWith('video/'))return true;
- return blob.slice(4,8).text().then(x=>x==='ftyp').catch(()=>false);
+ const head=new Uint8Array(await blob.slice(0,12).arrayBuffer());
+ const ascii=(start,end)=>String.fromCharCode(...head.slice(start,end));
+ return ascii(4,8)==='ftyp'||(head[0]===0x1a&&head[1]===0x45&&head[2]===0xdf&&head[3]===0xa3);
 }
 async function fetchFirstValidMedia(urls,kind){
  const errors=[];
