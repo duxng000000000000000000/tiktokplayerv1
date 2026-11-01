@@ -89,7 +89,7 @@ let db=null, songs=[], currentIndex=-1, shuffle=false, repeat=0, sleepTimer=null
 const $=id=>document.getElementById(id);
 function setStatus(message,error=false){const el=$('extractStatus');el.classList.toggle('error',error);el.lastElementChild.textContent=message}
 function formatTime(v){if(!Number.isFinite(v))return '00:00';const m=Math.floor(v/60),s=Math.floor(v%60);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
-function setBusy(value){extractionBusy=value;$('extractBtn').disabled=value;$('extractBtn').textContent=value?'Đang xử lý…':'Lấy âm thanh từ TikTok';}
+function setBusy(value){extractionBusy=value;$('extractBtn').disabled=value;$('videoFile').disabled=value;$('extractBtn').textContent=value?'Đang xử lý…':'Lấy âm thanh từ TikTok';}
 function clearStoreOnce(database,storeName){
  return new Promise(resolve=>{
   if(!database.objectStoreNames.contains(storeName)){resolve();return}
@@ -222,6 +222,7 @@ async function loadFFmpeg(){
 function cleanFileName(name){return (name||'tiktok-video').replace(/\.[^.]+$/,'').replace(/[\\/:*?"<>|]+/g,' ').trim().slice(0,90)||'tiktok-video'}
 async function extractAudioFromVideo(file,title,author){
  if(!file||!file.size)throw new Error('Video không hợp lệ hoặc có dung lượng bằng 0.');
+ if(file.type&&file.type.startsWith('audio/'))throw new Error('Nguồn nhận được là tệp âm thanh ('+file.type+'), không phải video. TikTok có thể đã trả về luồng audio thay vì video; hãy tải video về máy rồi chọn file video.');
  if(file.size>150*1024*1024)throw new Error('Video vượt quá 150 MB. Hãy chọn file nhỏ hơn để tránh hết bộ nhớ trình duyệt.');
  setStatus('Đang xử lý video…');
  const engine=await loadFFmpeg();
@@ -260,6 +261,7 @@ async function extractAudioFromVideo(file,title,author){
 }
 async function extractFromLocalFile(file){
  if(!file)return;
+ if(extractionBusy){setStatus('Đang xử lý một tác vụ khác. Hãy đợi tác vụ hiện tại kết thúc rồi thử lại.',true);return;}
  $('selectedFile').textContent=file.name;
  setBusy(true);
  try{
@@ -276,6 +278,7 @@ async function extractFromLocalFile(file){
 }
 $('videoFile').addEventListener('change',e=>extractFromLocalFile(e.target.files&&e.target.files[0]));
 async function extractFromTikTok(){
+ if(extractionBusy){setStatus('Đang xử lý một tác vụ khác. Hãy đợi tác vụ hiện tại kết thúc rồi thử lại.',true);return;}
  const url=$('tiktokUrl').value.trim();
  if(!url)return setStatus('Bạn hãy dán link TikTok trước.',true);
  if(!/^https?:\/\/(www\.)?(vm\.tiktok\.com|vt\.tiktok\.com|m\.tiktok\.com|tiktok\.com)\//i.test(url))return setStatus('Link không giống URL TikTok hợp lệ.',true);
