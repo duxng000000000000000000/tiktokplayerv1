@@ -25,7 +25,8 @@ button,input{font:inherit}button{cursor:pointer}
 .theme-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}.theme-label{font:10px 'DM Mono',monospace;color:var(--muted);letter-spacing:.12em}
 .theme-btn{border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:8px 11px;border-radius:99px;font-size:11px}.theme-btn.active{border-color:var(--accent);color:var(--text);background:var(--glow)}
 .hero{margin:0 0 24px}.eyebrow{font:10px 'DM Mono',monospace;letter-spacing:.2em;color:var(--accent);text-transform:uppercase}.hero h1{font-size:clamp(27px,5vw,44px);letter-spacing:-.055em;line-height:1.08;margin:10px 0 8px}.hero p{color:var(--muted);font-size:13px;line-height:1.7;max-width:640px;margin:0}
-.layout{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(300px,.92fr);gap:16px;align-items:start}
+.layout{display:grid;grid-template-columns:minmax(0,720px);justify-content:center;gap:0;align-items:start}
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.file-picker{display:flex;align-items:center;justify-content:center;width:100%;margin-top:10px;min-height:46px;text-align:center}.file-name{font-size:11px;color:var(--muted);margin:8px 2px 0;overflow-wrap:anywhere}.status{overflow-wrap:anywhere}.player{width:100%}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:var(--shadow);backdrop-filter:blur(18px);margin-bottom:16px}
 .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.panel-title{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.panel-kicker{font:10px 'DM Mono',monospace;color:var(--muted)}
 .input{width:100%;border:1px solid var(--line);background:var(--bg2);color:var(--text);border-radius:12px;padding:14px;font-size:13px;outline:none}.input:focus{border-color:var(--accent)}.input::placeholder{color:var(--muted)}
@@ -39,7 +40,7 @@ button,input{font:inherit}button{cursor:pointer}
 .controls{display:flex;justify-content:center;align-items:center;gap:12px;margin:18px 0 6px}.control{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:13px}.control.main{width:50px;height:50px;background:var(--accent);color:#111820;border:0;font-size:17px}.control.active{color:var(--accent2);border-color:var(--accent)}
 .playlist{max-height:290px;overflow:auto}.track{display:flex;align-items:center;gap:10px;padding:11px;border:1px solid transparent;border-radius:12px;cursor:pointer}.track:hover{background:var(--panel2)}.track.active{background:var(--glow);border-color:var(--line)}.track-icon{width:32px;height:32px;border-radius:9px;background:var(--panel2);display:grid;place-items:center;color:var(--accent);flex:none}.track-info{min-width:0;flex:1;text-align:left}.track-name{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.track-author{font-size:10px;color:var(--muted);margin-top:3px}.empty{text-align:center;color:var(--muted);font-size:11px;padding:24px 10px}
 .timer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.timer-grid .btn{padding:10px 5px}.footer{color:var(--muted);font:10px 'DM Mono',monospace;text-align:center;margin-top:14px;line-height:1.8}
-@media(max-width:760px){body{padding:18px 12px 36px}.layout{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.theme-wrap{justify-content:flex-start}.panel{padding:17px}.player{padding:20px}.hero{margin-bottom:18px}}
+@media(max-width:760px){body{padding:14px 12px 28px}.layout{grid-template-columns:minmax(0,1fr);width:100%}.topbar{align-items:flex-start;flex-direction:column}.theme-wrap{justify-content:flex-start}.panel{padding:16px;border-radius:18px}.player{padding:18px}.hero{margin-bottom:16px}.hero p{font-size:12px}.art{width:126px;height:126px}.file-picker{font-size:12px}.controls{gap:9px}}
 </style>
 </head>
 <body data-theme="midnight">
@@ -48,39 +49,35 @@ button,input{font:inherit}button{cursor:pointer}
  <div class="brand"><div class="brand-mark">◌</div><div><div class="brand-name">AFTERGLOW</div><div class="brand-sub">PERSONAL AUDIO SPACE</div></div></div>
  <div class="theme-wrap"><span class="theme-label">MOOD</span><button class="theme-btn active" data-theme-choice="midnight">Midnight</button><button class="theme-btn" data-theme-choice="moss">Moss</button><button class="theme-btn" data-theme-choice="dusk">Dusk</button></div>
 </header>
-<section class="hero"><div class="eyebrow">A quieter way to listen</div><h1>Your sound, your atmosphere.</h1><p>Trích xuất âm thanh từ chính video TikTok, lưu vào thư viện offline và nghe trong một không gian tối giản. Không dùng ảnh cá nhân mặc định.</p></section>
+<section class="hero"><div class="eyebrow">A quieter way to listen</div><h1>Your sound, your atmosphere.</h1><p>Nghe và lưu nhạc offline.</p></section>
 <div class="layout">
- <main>
-  <section class="panel">
-   <div class="panel-head"><div class="panel-title">01 / Extract from video</div><div class="panel-kicker">VIDEO → AUDIO</div></div>
-   <input id="tiktokUrl" class="input" type="url" placeholder="Dán link video TikTok..." autocomplete="url">
-   <button class="btn btn-primary btn-wide" id="extractBtn">↓ &nbsp; EXTRACT AUDIO</button>
-   <div class="file-row"><input id="videoFile" type="file" accept="video/*"><span class="panel-kicker">OR LOCAL VIDEO</span></div>
-   <p class="hint">Ưu tiên tách track audio trực tiếp bằng FFmpeg <strong>stream copy</strong> (không re-encode). Âm thanh gốc có gì thì giữ nguyên như vậy; không thể phục hồi chi tiết đã mất từ video nguồn.</p>
-   <div id="extractStatus" class="status"><span class="dot"></span><span>Dán link video TikTok để bắt đầu. Nếu đường dẫn video bị chặn CORS, hãy tải video mà bạn có quyền sử dụng về máy rồi chọn file ở trên.</span></div>
-  </section>
-  <section class="panel">
-   <div class="panel-head"><div class="panel-title">02 / Your library</div><div class="panel-kicker" id="trackCount">0 TRACKS</div></div>
-   <div class="playlist" id="playlist"><div class="empty">Thư viện đang trống — hãy thêm video đầu tiên.</div></div>
-  </section>
-  <section class="panel">
-   <div class="panel-head"><div class="panel-title">03 / Sleep timer</div><div class="panel-kicker">AUTO STOP</div></div>
-   <div class="timer-grid"><button class="btn" data-timer="15">15 MIN</button><button class="btn" data-timer="30">30 MIN</button><button class="btn" data-timer="60">60 MIN</button></div>
-   <div class="hint" id="timerStatus">Chưa đặt hẹn giờ.</div>
-  </section>
- </main>
- <aside>
-  <section class="panel player">
-   <div class="panel-head"><div class="panel-title">Now playing</div><div class="panel-kicker">OFFLINE PLAYER</div></div>
-   <div class="art" id="disc"><span>♫</span></div>
-   <div class="song-title" id="songTitle">Nothing playing</div><div class="song-artist" id="songArtist">Choose a track from your library</div>
-   <input type="range" class="progress" id="progress" min="0" max="100" value="0">
-   <div class="times"><span id="currentTime">00:00</span><span id="duration">00:00</span></div>
-   <div class="controls"><button class="control" id="shuffleBtn" title="Shuffle">⤨</button><button class="control" id="prevBtn" title="Previous">◂</button><button class="control main" id="playBtn" title="Play">▶</button><button class="control" id="nextBtn" title="Next">▸</button><button class="control" id="repeatBtn" title="Repeat">↻</button></div>
-   <div class="hint">Phát nền và điều khiển màn hình khóa phụ thuộc trình duyệt / hệ điều hành.</div>
-  </section>
-  <div class="footer">AFTERGLOW · PERSONAL AUDIO PLAYER<br>NO PERSONAL PHOTOS · NO AUDIO RE-ENCODING</div>
- </aside>
+ <section class="panel player">
+  <div class="panel-head"><div class="panel-title">Đang phát</div><div class="panel-kicker">PLAYER</div></div>
+  <div class="art" id="disc"><span>♫</span></div>
+  <div class="song-title" id="songTitle">Chưa chọn bài</div><div class="song-artist" id="songArtist">Chọn nhạc trong thư viện</div>
+  <input type="range" class="progress" id="progress" min="0" max="100" value="0">
+  <div class="times"><span id="currentTime">00:00</span><span id="duration">00:00</span></div>
+  <div class="controls"><button class="control" id="shuffleBtn" title="Phát ngẫu nhiên">⤨</button><button class="control" id="prevBtn" title="Bài trước">◂</button><button class="control main" id="playBtn" title="Phát">▶</button><button class="control" id="nextBtn" title="Bài tiếp">▸</button><button class="control" id="repeatBtn" title="Lặp lại">↻</button></div>
+ </section>
+ <section class="panel">
+  <div class="panel-head"><div class="panel-title">Hẹn giờ tắt</div><div class="panel-kicker">SLEEP TIMER</div></div>
+  <div class="timer-grid"><button class="btn" data-timer="15">15 phút</button><button class="btn" data-timer="30">30 phút</button><button class="btn" data-timer="60">60 phút</button></div>
+  <div class="hint" id="timerStatus">Chưa đặt hẹn giờ.</div>
+ </section>
+ <section class="panel">
+  <div class="panel-head"><div class="panel-title">Thêm nhạc</div><div class="panel-kicker">TIKTOK / FILE</div></div>
+  <input id="tiktokUrl" class="input" type="url" placeholder="Dán link TikTok..." autocomplete="url">
+  <button class="btn btn-primary btn-wide" id="extractBtn">Lấy âm thanh từ TikTok</button>
+  <input id="videoFile" class="visually-hidden" type="file" accept="video/*,audio/*">
+  <label for="videoFile" class="btn file-picker">Chọn video hoặc file nhạc từ điện thoại</label>
+  <div id="selectedFile" class="file-name">Chưa chọn tệp</div>
+  <div id="extractStatus" class="status"><span class="dot"></span><span>Nếu link TikTok không tải được, hãy chọn video đã lưu trên máy.</span></div>
+ </section>
+ <section class="panel">
+  <div class="panel-head"><div class="panel-title">Playlist</div><div class="panel-kicker" id="trackCount">0 BÀI</div></div>
+  <div class="playlist" id="playlist"><div class="empty">Chưa có bài nhạc</div></div>
+ </section>
+ <div class="footer">AFTERGLOW</div>
 </div>
 <audio id="audio" preload="metadata" playsinline></audio>
 </div>
@@ -92,7 +89,7 @@ let db=null, songs=[], currentIndex=-1, shuffle=false, repeat=0, sleepTimer=null
 const $=id=>document.getElementById(id);
 function setStatus(message,error=false){const el=$('extractStatus');el.classList.toggle('error',error);el.lastElementChild.textContent=message}
 function formatTime(v){if(!Number.isFinite(v))return '00:00';const m=Math.floor(v/60),s=Math.floor(v%60);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
-function setBusy(value){extractionBusy=value;$('extractBtn').disabled=value;$('extractBtn').textContent=value?'PROCESSING…':'↓  EXTRACT AUDIO';}
+function setBusy(value){extractionBusy=value;$('extractBtn').disabled=value;$('extractBtn').textContent=value?'Đang xử lý…':'Lấy âm thanh từ TikTok';}
 function clearStoreOnce(database,storeName){
  return new Promise(resolve=>{
   if(!database.objectStoreNames.contains(storeName)){resolve();return}
@@ -226,14 +223,14 @@ function cleanFileName(name){return (name||'tiktok-video').replace(/\.[^.]+$/,''
 async function extractAudioFromVideo(file,title,author){
  if(!file||!file.size)throw new Error('Video không hợp lệ hoặc có dung lượng bằng 0.');
  if(file.size>150*1024*1024)throw new Error('Video vượt quá 150 MB. Hãy chọn file nhỏ hơn để tránh hết bộ nhớ trình duyệt.');
- setStatus('Đang khởi động FFmpeg single-thread (không cần SharedArrayBuffer)…');
+ setStatus('Đang xử lý video…');
  const engine=await loadFFmpeg();
  const inputName='source_video.mp4',outputName='extracted_audio.m4a';
  try{engine.FS('unlink',inputName)}catch(e){}
  try{engine.FS('unlink',outputName)}catch(e){}
- setStatus('Đang nạp video vào bộ nhớ xử lý…');
+ setStatus('Đang nạp video…');
  engine.FS('writeFile',inputName,new Uint8Array(await file.arrayBuffer()));
- setStatus('Đang tách track âm thanh bằng stream copy — không mã hóa lại…');
+ setStatus('Đang tách âm thanh…');
  try{await engine.run('-i',inputName,'-map','0:a:0','-vn','-c:a','copy','-f','ipod',outputName)}
  catch(e){throw new Error('Không tách được track audio ở chế độ giữ nguyên dữ liệu. Video có thể không chứa audio hoặc codec/container không tương thích; app sẽ không tự re-encode vì bạn yêu cầu giữ nguyên chất lượng.')}
  let raw;
@@ -247,9 +244,18 @@ async function extractAudioFromVideo(file,title,author){
 }
 async function extractFromLocalFile(file){
  if(!file)return;
+ $('selectedFile').textContent=file.name;
  setBusy(true);
- try{await extractAudioFromVideo(file,cleanFileName(file.name),'Local video');setStatus('Đã trích xuất và lưu audio offline. Track được copy, không re-encode.')}
- catch(e){setStatus(e.message||'Không thể xử lý video.',true)}
+ try{
+  if(file.type.startsWith('audio/')){
+   const id=await saveSong(cleanFileName(file.name), 'File trên thiết bị', file);
+   loadSavedSongs();const index=songs.findIndex(s=>s.id===id);if(index>=0)playSongAtIndex(index);
+   setStatus('Đã thêm nhạc vào playlist.');
+  }else{
+   await extractAudioFromVideo(file,cleanFileName(file.name),'Video trên thiết bị');
+   setStatus('Đã tách âm thanh từ video và thêm vào playlist.');
+  }
+ }catch(e){setStatus(e.message||'Không thể thêm tệp.',true)}
  finally{setBusy(false);$('videoFile').value=''}
 }
 $('videoFile').addEventListener('change',e=>extractFromLocalFile(e.target.files&&e.target.files[0]));
