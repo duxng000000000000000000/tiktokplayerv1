@@ -7,395 +7,299 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Afterglow">
-<title>Afterglow — TikTok Audio Player</title>
+<title>Afterglow — TikTok Video Player</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
 <style>
 :root{color-scheme:dark;--bg:#10151d;--bg2:#171f2b;--panel:rgba(27,37,51,.88);--panel2:#202c3b;--text:#e7edf5;--muted:#91a0b4;--line:rgba(176,198,224,.15);--accent:#9bb8d8;--accent2:#c4d4e7;--glow:rgba(115,160,210,.16);--danger:#d88b8b;--shadow:0 18px 60px rgba(0,0,0,.22)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0%,var(--glow),transparent 38%),radial-gradient(ellipse at 90% 80%,rgba(100,130,155,.08),transparent 36%),var(--bg);color:var(--text);font-family:Manrope,system-ui,sans-serif;padding:28px 16px 50px;transition:background .3s,color .3s}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0%,var(--glow),transparent 38%),radial-gradient(ellipse at 90% 80%,rgba(100,130,155,.08),transparent 36%),var(--bg);color:var(--text);font-family:Manrope,system-ui,sans-serif;padding:25px 16px 42px;transition:background .3s,color .3s}
 body[data-theme="moss"]{--bg:#111a17;--bg2:#1a2822;--panel:rgba(27,43,35,.9);--panel2:#24382e;--text:#e5eee5;--muted:#9aaa9c;--line:rgba(177,211,182,.15);--accent:#a8c7a5;--accent2:#d1e3c8;--glow:rgba(105,155,112,.17)}
 body[data-theme="dusk"]{--bg:#191621;--bg2:#272131;--panel:rgba(42,35,53,.9);--panel2:#342b42;--text:#f0e9f5;--muted:#b0a2bc;--line:rgba(208,183,226,.16);--accent:#c6a8d8;--accent2:#e4ccec;--glow:rgba(161,120,190,.18)}
 button,input{font:inherit}button{cursor:pointer}
-.shell{max-width:1020px;margin:auto}
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:28px}
+.shell{max-width:1040px;margin:auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:25px}
 .brand{display:flex;align-items:center;gap:12px}.brand-mark{width:42px;height:42px;border:1px solid var(--line);border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,var(--panel2),transparent);color:var(--accent2);font-size:20px}
 .brand-name{font-size:15px;font-weight:800;letter-spacing:.16em}.brand-sub{font:10px 'DM Mono',monospace;color:var(--muted);letter-spacing:.14em;margin-top:4px}
 .theme-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}.theme-label{font:10px 'DM Mono',monospace;color:var(--muted);letter-spacing:.12em}
 .theme-btn{border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:8px 11px;border-radius:99px;font-size:11px}.theme-btn.active{border-color:var(--accent);color:var(--text);background:var(--glow)}
-.hero{margin:0 0 24px}.eyebrow{font:10px 'DM Mono',monospace;letter-spacing:.2em;color:var(--accent);text-transform:uppercase}.hero h1{font-size:clamp(27px,5vw,44px);letter-spacing:-.055em;line-height:1.08;margin:10px 0 8px}.hero p{color:var(--muted);font-size:13px;line-height:1.7;max-width:640px;margin:0}
-.layout{display:grid;grid-template-columns:minmax(0,720px);justify-content:center;gap:0;align-items:start}
-.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.file-picker{display:flex;align-items:center;justify-content:center;width:100%;margin-top:10px;min-height:46px;text-align:center}.file-name{font-size:11px;color:var(--muted);margin:8px 2px 0;overflow-wrap:anywhere}.status{overflow-wrap:anywhere}.player{width:100%}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:var(--shadow);backdrop-filter:blur(18px);margin-bottom:16px}
-.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.panel-title{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.panel-kicker{font:10px 'DM Mono',monospace;color:var(--muted)}
+.hero{margin:0 0 22px}.eyebrow{font:10px 'DM Mono',monospace;letter-spacing:.2em;color:var(--accent);text-transform:uppercase}.hero h1{font-size:clamp(27px,5vw,43px);letter-spacing:-.055em;line-height:1.08;margin:10px 0 8px}.hero p{color:var(--muted);font-size:13px;line-height:1.7;max-width:680px;margin:0}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.78fr);gap:16px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:19px;box-shadow:var(--shadow);backdrop-filter:blur(18px);margin-bottom:16px;min-width:0}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}.panel-title{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.panel-kicker{font:10px 'DM Mono',monospace;color:var(--muted)}
 .input{width:100%;border:1px solid var(--line);background:var(--bg2);color:var(--text);border-radius:12px;padding:14px;font-size:13px;outline:none}.input:focus{border-color:var(--accent)}.input::placeholder{color:var(--muted)}
-.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:12px;padding:12px 14px;font-size:12px;font-weight:700;transition:.18s}.btn:hover{border-color:var(--accent);transform:translateY(-1px)}.btn-primary{background:var(--accent);color:#101820;border-color:transparent}.btn-primary:hover{filter:brightness(1.08)}.btn-wide{width:100%;margin-top:10px}.btn-small{padding:8px 10px;font-size:11px}.btn-quiet{background:transparent;color:var(--muted)}.btn-danger{color:var(--danger)}
-.hint{font-size:11px;line-height:1.65;color:var(--muted);margin:12px 0 0}.hint strong{color:var(--text)}
-.status{display:flex;gap:9px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.12);font-size:11px;color:var(--muted);line-height:1.6;margin-top:12px}.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:4px;flex:none}.status.error .dot{background:var(--danger)}
-.file-row{display:flex;gap:10px;align-items:center;margin-top:12px}.file-row input{font-size:11px;color:var(--muted);width:100%;min-width:0}
-.player{padding:22px;text-align:center}.art{width:150px;height:150px;margin:2px auto 18px;border-radius:50%;border:1px solid var(--line);background:radial-gradient(circle at 35% 30%,var(--accent2),transparent 22%),radial-gradient(circle at 65% 65%,var(--accent),transparent 25%),linear-gradient(145deg,var(--panel2),var(--bg));box-shadow:0 0 0 8px var(--glow),0 15px 50px rgba(0,0,0,.25);display:grid;place-items:center;position:relative;overflow:hidden}.art:before{content:"";position:absolute;inset:13px;border:1px solid rgba(255,255,255,.16);border-radius:50%}.art span{font-size:32px;color:var(--text);opacity:.85}.art.playing{animation:spin 12s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
-.song-title{font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.song-artist{font-size:11px;color:var(--muted);margin-top:5px}
-.progress{width:100%;accent-color:var(--accent);margin:20px 0 4px}.times{display:flex;justify-content:space-between;color:var(--muted);font:10px 'DM Mono',monospace}
-.controls{display:flex;justify-content:center;align-items:center;gap:12px;margin:18px 0 6px}.control{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:13px}.control.main{width:50px;height:50px;background:var(--accent);color:#111820;border:0;font-size:17px}.control.active{color:var(--accent2);border-color:var(--accent)}
-.playlist{max-height:290px;overflow:auto}.track{display:flex;align-items:center;gap:10px;padding:11px;border:1px solid transparent;border-radius:12px;cursor:pointer}.track:hover{background:var(--panel2)}.track.active{background:var(--glow);border-color:var(--line)}.track-icon{width:32px;height:32px;border-radius:9px;background:var(--panel2);display:grid;place-items:center;color:var(--accent);flex:none}.track-info{min-width:0;flex:1;text-align:left}.track-name{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.track-author{font-size:10px;color:var(--muted);margin-top:3px}.empty{text-align:center;color:var(--muted);font-size:11px;padding:24px 10px}
-.timer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.timer-grid .btn{padding:10px 5px}.footer{color:var(--muted);font:10px 'DM Mono',monospace;text-align:center;margin-top:14px;line-height:1.8}
-@media(max-width:760px){body{padding:14px 12px 28px}.layout{grid-template-columns:minmax(0,1fr);width:100%}.topbar{align-items:flex-start;flex-direction:column}.theme-wrap{justify-content:flex-start}.panel{padding:16px;border-radius:18px}.player{padding:18px}.hero{margin-bottom:16px}.hero p{font-size:12px}.art{width:126px;height:126px}.file-picker{font-size:12px}.controls{gap:9px}}
+.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:12px;padding:11px 13px;font-size:12px;font-weight:700;transition:.18s}.btn:hover{border-color:var(--accent);transform:translateY(-1px)}.btn:disabled{opacity:.55;cursor:wait;transform:none}.btn-primary{background:var(--accent);color:#101820;border-color:transparent}.btn-primary:hover{filter:brightness(1.08)}.btn-wide{width:100%;margin-top:10px}.btn-small{padding:8px 10px;font-size:11px}.btn-quiet{background:transparent;color:var(--muted)}.btn-danger{color:var(--danger)}
+.hint{font-size:11px;line-height:1.65;color:var(--muted);margin:11px 0 0}.hint strong{color:var(--text)}
+.status{display:flex;gap:9px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.12);font-size:11px;color:var(--muted);line-height:1.6;margin-top:12px;overflow-wrap:anywhere}.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:4px;flex:none}.status.error .dot{background:var(--danger)}
+.video-panel{padding:17px}.video-stage{width:100%;max-width:440px;margin:0 auto;aspect-ratio:9/16;max-height:min(72vh,780px);background:#080b10;border:1px solid var(--line);border-radius:17px;overflow:hidden;position:relative}.video-stage iframe{display:block;width:100%;height:100%;border:0;background:#080b10}.video-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--muted);font-size:12px;text-align:center;padding:24px;pointer-events:none}.video-placeholder .symbol{font-size:38px;color:var(--accent2);opacity:.8}.video-stage.has-player .video-placeholder{display:none}
+.now-title{font-size:16px;font-weight:800;overflow-wrap:anywhere;margin-top:15px}.now-sub{font-size:11px;color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
+.progress{width:100%;accent-color:var(--accent);margin:16px 0 4px}.times{display:flex;justify-content:space-between;color:var(--muted);font:10px 'DM Mono',monospace}
+.controls{display:flex;justify-content:center;align-items:center;gap:10px;margin:15px 0 1px}.control{width:39px;height:39px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:14px}.control.main{width:49px;height:49px;background:var(--accent);color:#111820;border:0;font-size:18px}.control.active{color:var(--accent2);border-color:var(--accent)}
+.timer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.timer-grid .btn{padding:10px 5px}
+.playlist{max-height:430px;overflow:auto}.track{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid transparent;border-radius:12px;cursor:pointer}.track:hover{background:var(--panel2)}.track.active{background:var(--glow);border-color:var(--line)}.track-icon{width:34px;height:42px;border-radius:8px;background:var(--panel2);display:grid;place-items:center;color:var(--accent);flex:none;font-size:13px}.track-info{min-width:0;flex:1;text-align:left}.track-name{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.track-author{font-size:10px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.empty{text-align:center;color:var(--muted);font-size:11px;padding:24px 10px}
+.timer-status{font-size:11px;color:var(--muted);margin-top:11px;line-height:1.6}.footer{color:var(--muted);font:10px 'DM Mono',monospace;text-align:center;margin-top:4px;line-height:1.8}
+@media(max-width:780px){body{padding:14px 12px 28px}.layout{grid-template-columns:minmax(0,1fr);gap:0}.topbar{align-items:flex-start;flex-direction:column}.theme-wrap{justify-content:flex-start}.panel{padding:15px;border-radius:18px}.video-panel{padding:13px}.video-stage{max-width:390px;max-height:64vh}.hero{margin-bottom:16px}.hero p{font-size:12px}.playlist{max-height:320px}}
 </style>
 </head>
 <body data-theme="midnight">
 <div class="shell">
 <header class="topbar">
- <div class="brand"><div class="brand-mark">◌</div><div><div class="brand-name">AFTERGLOW</div><div class="brand-sub">PERSONAL AUDIO SPACE</div></div></div>
+ <div class="brand"><div class="brand-mark">◌</div><div><div class="brand-name">AFTERGLOW</div><div class="brand-sub">YOUR PERSONAL VIDEO SPACE</div></div></div>
  <div class="theme-wrap"><span class="theme-label">MOOD</span><button class="theme-btn active" data-theme-choice="midnight">Midnight</button><button class="theme-btn" data-theme-choice="moss">Moss</button><button class="theme-btn" data-theme-choice="dusk">Dusk</button></div>
 </header>
-<section class="hero"><div class="eyebrow">A quieter way to listen</div><h1>Your sound, your atmosphere.</h1><p>Nghe và lưu nhạc offline.</p></section>
+<section class="hero"><div class="eyebrow">A quieter way to watch</div><h1>Your feed, your atmosphere.</h1><p>Thêm video TikTok vào playlist riêng và xem trực tiếp ngay trong Afterglow.</p></section>
 <div class="layout">
- <section class="panel player">
-  <div class="panel-head"><div class="panel-title">Đang phát</div><div class="panel-kicker">PLAYER</div></div>
-  <div class="art" id="disc"><span>♫</span></div>
-  <div class="song-title" id="songTitle">Chưa chọn bài</div><div class="song-artist" id="songArtist">Chọn nhạc trong thư viện</div>
-  <input type="range" class="progress" id="progress" min="0" max="100" value="0">
-  <div class="times"><span id="currentTime">00:00</span><span id="duration">00:00</span></div>
-  <div class="controls"><button class="control" id="shuffleBtn" title="Phát ngẫu nhiên">⤨</button><button class="control" id="prevBtn" title="Bài trước">◂</button><button class="control main" id="playBtn" title="Phát">▶</button><button class="control" id="nextBtn" title="Bài tiếp">▸</button><button class="control" id="repeatBtn" title="Lặp lại">↻</button></div>
- </section>
- <section class="panel">
-  <div class="panel-head"><div class="panel-title">Hẹn giờ tắt</div><div class="panel-kicker">SLEEP TIMER</div></div>
-  <div class="timer-grid"><button class="btn" data-timer="15">15 phút</button><button class="btn" data-timer="30">30 phút</button><button class="btn" data-timer="60">60 phút</button></div>
-  <div class="hint" id="timerStatus">Chưa đặt hẹn giờ.</div>
- </section>
- <section class="panel">
-  <div class="panel-head"><div class="panel-title">Thêm nhạc</div><div class="panel-kicker">TIKTOK / FILE</div></div>
-  <input id="tiktokUrl" class="input" type="url" placeholder="Dán link TikTok..." autocomplete="url">
-  <button class="btn btn-primary btn-wide" id="extractBtn">Lấy âm thanh từ TikTok</button>
-  <input id="videoFile" class="visually-hidden" type="file" accept="video/*,audio/*">
-  <label for="videoFile" class="btn file-picker">Chọn video hoặc file nhạc từ điện thoại</label>
-  <div id="selectedFile" class="file-name">Chưa chọn tệp</div>
-  <div id="extractStatus" class="status"><span class="dot"></span><span>Nếu link TikTok không tải được, hãy chọn video đã lưu trên máy.</span></div>
- </section>
- <section class="panel">
-  <div class="panel-head"><div class="panel-title">Playlist</div><div class="panel-kicker" id="trackCount">0 BÀI</div></div>
-  <div class="playlist" id="playlist"><div class="empty">Chưa có bài nhạc</div></div>
- </section>
- <div class="footer">AFTERGLOW</div>
+ <main>
+  <section class="panel video-panel">
+   <div class="panel-head"><div class="panel-title">Đang phát</div><div class="panel-kicker">TIKTOK PLAYER</div></div>
+   <div class="video-stage" id="videoStage">
+    <div class="video-placeholder"><div class="symbol">▶</div><div>Chọn một video trong playlist<br>hoặc dán link TikTok để bắt đầu</div></div>
+    <iframe id="tiktokPlayer" title="TikTok video player" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+   </div>
+   <div class="now-title" id="songTitle">Chưa chọn video</div><div class="now-sub" id="songArtist">Playlist TikTok của bạn</div>
+   <input type="range" class="progress" id="progress" min="0" max="100" value="0" aria-label="Tua video">
+   <div class="times"><span id="currentTime">00:00</span><span id="duration">00:00</span></div>
+   <div class="controls">
+    <button class="control" id="shuffleBtn" title="Phát ngẫu nhiên" aria-label="Phát ngẫu nhiên">⤨</button>
+    <button class="control" id="prevBtn" title="Video trước" aria-label="Video trước">◂</button>
+    <button class="control main" id="playBtn" title="Phát" aria-label="Phát">▶</button>
+    <button class="control" id="nextBtn" title="Video tiếp theo" aria-label="Video tiếp theo">▸</button>
+    <button class="control" id="repeatBtn" title="Lặp lại: tắt" aria-label="Chế độ lặp">↻</button>
+   </div>
+   <div class="hint">Có thể dùng điều khiển ngay trong video TikTok hoặc các nút của Afterglow.</div>
+   <div id="playerStatus" class="status"><span class="dot"></span><span>Dán link TikTok công khai để thêm video. Cần Internet để phát.</span></div>
+  </section>
+ </main>
+ <aside>
+  <section class="panel">
+   <div class="panel-head"><div class="panel-title">Thêm video</div><div class="panel-kicker">TIKTOK LINK</div></div>
+   <input id="tiktokUrl" class="input" type="url" placeholder="Dán link TikTok..." autocomplete="url" inputmode="url">
+   <button class="btn btn-primary btn-wide" id="addBtn">Thêm vào playlist</button>
+   <div class="hint">Hỗ trợ link video, slideshow/ảnh và link chia sẻ rút gọn khi dịch vụ phân giải được link.</div>
+  </section>
+  <section class="panel">
+   <div class="panel-head"><div class="panel-title">Hẹn giờ dừng</div><div class="panel-kicker">SLEEP TIMER</div></div>
+   <div class="timer-grid"><button class="btn" data-timer="15">15 phút</button><button class="btn" data-timer="30">30 phút</button><button class="btn" data-timer="60">60 phút</button></div>
+   <div class="timer-status" id="timerStatus">Chưa đặt hẹn giờ.</div>
+  </section>
+  <section class="panel">
+   <div class="panel-head"><div class="panel-title">Playlist</div><div class="panel-kicker" id="trackCount">0 VIDEO</div></div>
+   <div class="playlist" id="playlist"><div class="empty">Playlist đang trống</div></div>
+  </section>
+ </aside>
 </div>
-<audio id="audio" preload="metadata" playsinline></audio>
+<div class="footer">AFTERGLOW · TIKTOK VIDEO PLAYER</div>
 </div>
 <script>
 'use strict';
-const DB_NAME='AfterglowAudioLibrary_V1', STORE='songs', LEGACY_DB='TikTokPinkMusicDB_V2';
-const audio=document.getElementById('audio'), playlistEl=document.getElementById('playlist');
-let db=null, songs=[], currentIndex=-1, shuffle=false, repeat=0, sleepTimer=null, fadeTimer=null, ffmpeg=null, ffmpegLoadPromise=null, currentObjectUrl=null, extractionBusy=false;
+const DB_NAME='AfterglowTikTokLibrary_V1',STORE='posts';
 const $=id=>document.getElementById(id);
-function setStatus(message,error=false){const el=$('extractStatus');el.classList.toggle('error',error);el.lastElementChild.textContent=message}
-function formatTime(v){if(!Number.isFinite(v))return '00:00';const m=Math.floor(v/60),s=Math.floor(v%60);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
-function setBusy(value){extractionBusy=value;$('extractBtn').disabled=value;$('extractBtn').textContent=value?'Đang xử lý…':'Lấy âm thanh từ TikTok';}
-function clearStoreOnce(database,storeName){
- return new Promise(resolve=>{
-  if(!database.objectStoreNames.contains(storeName)){resolve();return}
-  let tx;
-  try{tx=database.transaction(storeName,'readwrite');tx.objectStore(storeName).clear()}
-  catch(e){resolve();return}
-  tx.oncomplete=()=>resolve();tx.onerror=()=>resolve();tx.onabort=()=>resolve();
- });
-}
-function clearLegacyTestTracks(){
- return new Promise(resolve=>{
-  let req;
-  try{req=indexedDB.open(LEGACY_DB)}catch(e){resolve();return}
-  req.onerror=()=>resolve();
-  req.onblocked=()=>resolve();
-  req.onsuccess=()=>{
-   const oldDb=req.result;
-   clearStoreOnce(oldDb,'songs').finally(()=>{oldDb.close();resolve()});
-  };
- });
-}
-async function initDB(){
+const frame=$('tiktokPlayer');
+let db=null,posts=[],currentIndex=-1,currentPostId=null,playerReady=false,pendingPlay=false,isPlaying=false;
+let currentTime=0,duration=0,shuffle=false,repeat=0,sleepTimer=null,seekDragging=false,resolveBusy=false;
+function setStatus(message,error=false){const el=$('playerStatus');el.classList.toggle('error',error);el.lastElementChild.textContent=message}
+function formatTime(v){if(!Number.isFinite(v)||v<0)return '00:00';const m=Math.floor(v/60),s=Math.floor(v%60);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
+function initDB(){
  return new Promise((resolve,reject)=>{
   const req=indexedDB.open(DB_NAME,1);
   req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true})};
   req.onerror=()=>reject(req.error);
-  req.onsuccess=async()=>{
-   db=req.result;db.onversionchange=()=>db.close();
-   const cleanupKey='afterglow-test-tracks-cleared-v1';
-   if(!localStorage.getItem(cleanupKey)){
-    await clearStoreOnce(db,STORE);
-    await clearLegacyTestTracks();
-    localStorage.setItem(cleanupKey,'1');
-   }
-   loadSavedSongs();resolve();
-  };
+  req.onsuccess=()=>{db=req.result;db.onversionchange=()=>db.close();loadPosts().then(resolve).catch(reject)};
  });
 }
-function loadSavedSongs(){if(!db)return;const tx=db.transaction(STORE,'readonly');const req=tx.objectStore(STORE).getAll();req.onsuccess=()=>{songs=req.result||[];renderPlaylist();if(currentIndex>=songs.length)currentIndex=-1}}
-function saveSong(title,author,blob){
+function loadPosts(){
  return new Promise((resolve,reject)=>{
-  if(!db){reject(new Error('Local library database is not ready'));return}
-  const tx=db.transaction(STORE,'readwrite'),req=tx.objectStore(STORE).add({title:title||'TikTok video audio',author:author||'TikTok video',blob:blob,createdAt:Date.now()});
-  req.onsuccess=()=>resolve(req.result);tx.onerror=()=>reject(tx.error||new Error('Could not save audio'));
+  if(!db){resolve();return}
+  const tx=db.transaction(STORE,'readonly'),req=tx.objectStore(STORE).getAll();
+  req.onsuccess=()=>{posts=(req.result||[]).sort((a,b)=>(a.position||a.createdAt||0)-(b.position||b.createdAt||0));renderPlaylist();resolve()};
+  req.onerror=()=>reject(req.error);
+ });
+}
+function savePost(post){
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(STORE,'readwrite'),req=tx.objectStore(STORE).add({...post,createdAt:Date.now()});
+  req.onsuccess=()=>resolve(req.result);tx.onerror=()=>reject(tx.error||new Error('Không lưu được video.'));
  });
 }
 function renderPlaylist(){
- playlistEl.replaceChildren();$('trackCount').textContent=songs.length+' TRACK'+(songs.length===1?'':'S');
- if(!songs.length){const empty=document.createElement('div');empty.className='empty';empty.textContent='Thư viện đang trống — hãy thêm video đầu tiên.';playlistEl.append(empty);return}
- songs.forEach((song,index)=>{
-  const row=document.createElement('div');row.className='track'+(index===currentIndex?' active':'');row.addEventListener('click',()=>playSongAtIndex(index));
-  const icon=document.createElement('div');icon.className='track-icon';icon.textContent='♫';
+ const root=$('playlist');root.replaceChildren();$('trackCount').textContent=posts.length+' VIDEO';
+ if(!posts.length){const empty=document.createElement('div');empty.className='empty';empty.textContent='Playlist đang trống — hãy thêm video TikTok đầu tiên.';root.append(empty);return}
+ posts.forEach((post,index)=>{
+  const row=document.createElement('div');row.className='track'+(index===currentIndex?' active':'');row.addEventListener('click',()=>playPostAt(index,true));
+  const icon=document.createElement('div');icon.className='track-icon';icon.textContent='▶';
   const info=document.createElement('div');info.className='track-info';
-  const name=document.createElement('div');name.className='track-name';name.textContent=song.title||'Untitled audio';
-  const artist=document.createElement('div');artist.className='track-author';artist.textContent=song.author||'TikTok video';
-  info.append(name,artist);
-  const del=document.createElement('button');del.className='btn btn-small btn-quiet btn-danger';del.textContent='✕';del.title='Delete track';del.addEventListener('click',e=>{e.stopPropagation();deleteSong(song.id)});
-  row.append(icon,info,del);playlistEl.append(row);
+  const name=document.createElement('div');name.className='track-name';name.textContent=post.title||'TikTok video';
+  const author=document.createElement('div');author.className='track-author';author.textContent=post.author||'TikTok';
+  info.append(name,author);
+  const del=document.createElement('button');del.className='btn btn-small btn-quiet btn-danger';del.textContent='✕';del.title='Xóa khỏi playlist';del.setAttribute('aria-label','Xóa '+(post.title||'video'));
+  del.addEventListener('click',e=>{e.stopPropagation();deletePost(post.id)});
+  row.append(icon,info,del);root.append(row);
  });
 }
-function deleteSong(id){
- if(!confirm('Xóa track này khỏi thư viện offline?'))return;
+function deletePost(id){
+ const index=posts.findIndex(p=>p.id===id);if(index<0)return;
  const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).delete(id);
- tx.oncomplete=()=>{if(currentIndex>=0&&songs[currentIndex]&&songs[currentIndex].id===id){audio.pause();audio.removeAttribute('src');audio.load();currentIndex=-1;$('songTitle').textContent='Nothing playing';$('songArtist').textContent='Choose a track from your library';$('disc').classList.remove('playing')}loadSavedSongs()};
+ tx.oncomplete=async()=>{
+  if(index===currentIndex){sendPlayer('pause');frame.removeAttribute('src');$('videoStage').classList.remove('has-player');currentIndex=-1;currentPostId=null;playerReady=false;pendingPlay=false;isPlaying=false;updatePlayButton();$('songTitle').textContent='Chưa chọn video';$('songArtist').textContent='Playlist TikTok của bạn';resetProgress()}
+  else if(index<currentIndex)currentIndex--;
+  await loadPosts();renderPlaylist();
+ };
 }
-function playSongAtIndex(index){
- if(index<0||index>=songs.length)return;
- currentIndex=index;const song=songs[index];
- if(currentObjectUrl)URL.revokeObjectURL(currentObjectUrl);
- currentObjectUrl=URL.createObjectURL(song.blob);audio.src=currentObjectUrl;
- $('songTitle').textContent=song.title||'Untitled audio';$('songArtist').textContent=song.author||'TikTok video';
- $('progress').value=0;$('currentTime').textContent='00:00';$('duration').textContent='00:00';
- renderPlaylist();
- const playPromise=audio.play();if(playPromise&&playPromise.catch)playPromise.catch(()=>{});
- updateMediaSession(song);
+function getPlayerUrl(id){
+ const params=new URLSearchParams({controls:'1',progress_bar:'1',play_button:'1',volume_control:'1',fullscreen_button:'1',timestamp:'1',loop:'0',autoplay:'0',music_info:'1',description:'0',rel:'0',native_context_menu:'0'});
+ return 'https://www.tiktok.com/player/v1/'+encodeURIComponent(id)+'?'+params.toString();
 }
-function updateMediaSession(song){
+function playPostAt(index,autoplay){
+ if(index<0||index>=posts.length)return;
+ currentIndex=index;const post=posts[index];currentPostId=post.postId;playerReady=false;pendingPlay=!!autoplay;isPlaying=false;currentTime=0;duration=0;resetProgress();
+ $('songTitle').textContent=post.title||'TikTok video';$('songArtist').textContent=post.author||'TikTok';
+ $('videoStage').classList.add('has-player');
+ frame.src=getPlayerUrl(post.postId);
+ renderPlaylist();updatePlayButton();updateMediaSession(post);
+ setStatus('Đang tải TikTok Player…');
+}
+function resetProgress(){$('progress').value=0;$('currentTime').textContent='00:00';$('duration').textContent='00:00'}
+function sendPlayer(type,value){
+ if(!frame.contentWindow)return false;
+ const message={'x-tiktok-player':true,type};
+ if(value!==undefined)message.value=value;
+ frame.contentWindow.postMessage(message,'https://www.tiktok.com');
+ return true;
+}
+function updatePlayButton(){$('playBtn').textContent=isPlaying?'Ⅱ':'▶';$('playBtn').title=isPlaying?'Tạm dừng':'Phát'}
+function togglePlay(){
+ if(currentIndex<0){if(posts.length)playPostAt(0,true);return}
+ if(!playerReady){pendingPlay=!isPlaying;setStatus('Player đang tải. Nếu không tự phát, hãy nhấn nút Play trong video TikTok.');return}
+ sendPlayer(isPlaying?'pause':'play');pendingPlay=!isPlaying;
+}
+function playNext(){
+ if(!posts.length)return;
+ let next;
+ if(shuffle&&posts.length>1){do{next=Math.floor(Math.random()*posts.length)}while(next===currentIndex)}
+ else next=currentIndex+1;
+ if(next>=posts.length){if(repeat===2)next=0;else{isPlaying=false;updatePlayButton();return}}
+ playPostAt(next,true);
+}
+function playPrev(){
+ if(!posts.length)return;
+ if(currentTime>3){sendPlayer('seekTo',0);return}
+ let previous=currentIndex-1;if(previous<0)previous=posts.length-1;
+ playPostAt(previous,true);
+}
+function handleEnded(){
+ isPlaying=false;updatePlayButton();
+ if(repeat===1){sendPlayer('seekTo',0);sendPlayer('play');return}
+ playNext();
+}
+function toggleShuffle(){shuffle=!shuffle;$('shuffleBtn').classList.toggle('active',shuffle);$('shuffleBtn').title=shuffle?'Tắt phát ngẫu nhiên':'Phát ngẫu nhiên'}
+function toggleRepeat(){
+ repeat=(repeat+1)%3;$('repeatBtn').classList.toggle('active',repeat!==0);$('repeatBtn').textContent=repeat===1?'↻1':'↻';
+ $('repeatBtn').title=repeat===0?'Lặp lại: tắt':repeat===1?'Lặp lại video hiện tại':'Lặp lại playlist';
+}
+function stopSleepTimer(){if(sleepTimer)clearTimeout(sleepTimer);sleepTimer=null;$('timerStatus').textContent='Đã hủy hẹn giờ.'}
+function setSleepTimer(minutes){
+ stopSleepTimer();$('timerStatus').textContent='Video sẽ tự dừng sau '+minutes+' phút. TikTok Player không hỗ trợ giảm âm lượng từ từ.';
+ sleepTimer=setTimeout(()=>{sendPlayer('pause');pendingPlay=false;isPlaying=false;updatePlayButton();sleepTimer=null;$('timerStatus').textContent='Đã dừng video theo hẹn giờ.'},minutes*60*1000);
+}
+function updateMediaSession(post){
  if(!('mediaSession' in navigator))return;
  try{
-  navigator.mediaSession.metadata=new MediaMetadata({title:song.title||'TikTok audio',artist:song.author||'TikTok video',album:'Afterglow'});
-  navigator.mediaSession.setActionHandler('play',()=>audio.play());
-  navigator.mediaSession.setActionHandler('pause',()=>audio.pause());
+  navigator.mediaSession.metadata=new MediaMetadata({title:post.title||'TikTok video',artist:post.author||'TikTok',album:'Afterglow'});
+  navigator.mediaSession.setActionHandler('play',()=>{if(playerReady)sendPlayer('play');else pendingPlay=true});
+  navigator.mediaSession.setActionHandler('pause',()=>sendPlayer('pause'));
   navigator.mediaSession.setActionHandler('previoustrack',playPrev);
   navigator.mediaSession.setActionHandler('nexttrack',playNext);
-  navigator.mediaSession.setActionHandler('seekbackward',d=>{audio.currentTime=Math.max(0,audio.currentTime-(d.seekOffset||10))});
-  navigator.mediaSession.setActionHandler('seekforward',d=>{audio.currentTime=Math.min(audio.duration||Infinity,audio.currentTime+(d.seekOffset||10))});
+  navigator.mediaSession.setActionHandler('seekbackward',d=>sendPlayer('seekTo',Math.max(0,currentTime-(d.seekOffset||10))));
+  navigator.mediaSession.setActionHandler('seekforward',d=>sendPlayer('seekTo',Math.min(duration||currentTime+10,currentTime+(d.seekOffset||10))));
+  navigator.mediaSession.setActionHandler('seekto',d=>{if(Number.isFinite(d.seekTime))sendPlayer('seekTo',d.seekTime)});
  }catch(e){}
 }
-function togglePlayPause(){if(currentIndex===-1&&songs.length){playSongAtIndex(0);return}if(!audio.src)return;if(audio.paused)audio.play().catch(()=>{});else audio.pause()}
-function playNext(){
- if(!songs.length)return;
- if(shuffle){if(songs.length===1){playSongAtIndex(0);return}let next=currentIndex;while(next===currentIndex)next=Math.floor(Math.random()*songs.length);playSongAtIndex(next);return}
- if(currentIndex<songs.length-1)playSongAtIndex(currentIndex+1);else if(repeat===2)playSongAtIndex(0);
+function onTikTokMessage(event){
+ if(event.origin!=='https://www.tiktok.com'||event.source!==frame.contentWindow)return;
+ const data=event.data;if(!data||data['x-tiktok-player']!==true)return;
+ const type=data.type,value=data.value;
+ if(type==='onPlayerReady'){
+  playerReady=true;setStatus('TikTok Player đã sẵn sàng.');
+  if(pendingPlay){sendPlayer('play');pendingPlay=false}
+ }else if(type==='onStateChange'){
+  const state=Number(value);
+  if(state===1){isPlaying=true;setStatus('Đang phát video TikTok.')}
+  else if(state===2||state===-1){isPlaying=false}
+  else if(state===0){handleEnded()}
+  updatePlayButton();
+ }else if(type==='onCurrentTime'){
+  const t=value&&typeof value==='object'?Number(value.currentTime):NaN;
+  const d=value&&typeof value==='object'?Number(value.duration):NaN;
+  if(Number.isFinite(t))currentTime=t;
+  if(Number.isFinite(d)&&d>0)duration=d;
+  if(!seekDragging&&duration>0)$('progress').value=Math.min(100,(currentTime/duration)*100);
+  $('currentTime').textContent=formatTime(currentTime);$('duration').textContent=formatTime(duration);
+  if('mediaSession' in navigator&&duration>0&&navigator.mediaSession.setPositionState){try{navigator.mediaSession.setPositionState({duration,playbackRate:1,position:Math.min(currentTime,duration)})}catch(e){}}
+ }else if(type==='onPlayerError'){
+  const code=value&&value.errorCode?value.errorCode:'';
+  setStatus('TikTok Player gặp lỗi '+code+'. Video có thể riêng tư, đã bị gỡ hoặc không cho nhúng.',true);
+ }
 }
-function playPrev(){if(!songs.length)return;if(audio.currentTime>3){audio.currentTime=0;return}if(currentIndex>0)playSongAtIndex(currentIndex-1);else playSongAtIndex(songs.length-1)}
-function toggleShuffle(){shuffle=!shuffle;$('shuffleBtn').classList.toggle('active',shuffle)}
-function toggleRepeat(){repeat=(repeat+1)%3;$('repeatBtn').classList.toggle('active',repeat!==0);$('repeatBtn').textContent=repeat===1?'↻1':'↻';$('repeatBtn').title=repeat===0?'Repeat off':repeat===1?'Repeat one':'Repeat all'}
-function stopSleepTimer(){if(sleepTimer)clearTimeout(sleepTimer);if(fadeTimer)clearInterval(fadeTimer);sleepTimer=null;fadeTimer=null;audio.volume=1;$('timerStatus').textContent='Đã hủy hẹn giờ.'}
-function setSleepTimer(minutes){
- stopSleepTimer();$('timerStatus').textContent='Nhạc sẽ tự tắt sau '+minutes+' phút.';
- sleepTimer=setTimeout(()=>{
-  fadeTimer=setInterval(()=>{
-   if(audio.volume>0.12)audio.volume=Math.max(0,audio.volume-.08);
-   else{clearInterval(fadeTimer);fadeTimer=null;audio.pause();audio.volume=1;$('timerStatus').textContent='Đã tắt nhạc theo hẹn giờ.'}
-  },350);
- },minutes*60*1000);
-}
-audio.addEventListener('timeupdate',()=>{if(audio.duration){$('progress').value=(audio.currentTime/audio.duration)*100;$('currentTime').textContent=formatTime(audio.currentTime);$('duration').textContent=formatTime(audio.duration)}});
-audio.addEventListener('loadedmetadata',()=>{$('duration').textContent=formatTime(audio.duration)});
-audio.addEventListener('play',()=>{$('disc').classList.add('playing');$('playBtn').textContent='Ⅱ'});
-audio.addEventListener('pause',()=>{$('disc').classList.remove('playing');$('playBtn').textContent='▶'});
-audio.addEventListener('ended',()=>{if(repeat===1){audio.currentTime=0;audio.play().catch(()=>{})}else playNext()});
-$('progress').addEventListener('input',e=>{if(audio.duration)audio.currentTime=(Number(e.target.value)/100)*audio.duration});
-$('playBtn').addEventListener('click',togglePlayPause);$('prevBtn').addEventListener('click',playPrev);$('nextBtn').addEventListener('click',playNext);$('shuffleBtn').addEventListener('click',toggleShuffle);$('repeatBtn').addEventListener('click',toggleRepeat);
+window.addEventListener('message',onTikTokMessage);
+$('playBtn').addEventListener('click',togglePlay);
+$('prevBtn').addEventListener('click',playPrev);
+$('nextBtn').addEventListener('click',playNext);
+$('shuffleBtn').addEventListener('click',toggleShuffle);
+$('repeatBtn').addEventListener('click',toggleRepeat);
+$('progress').addEventListener('pointerdown',()=>seekDragging=true);
+$('progress').addEventListener('pointerup',()=>seekDragging=false);
+$('progress').addEventListener('change',e=>{if(duration>0)sendPlayer('seekTo',(Number(e.target.value)/100)*duration);seekDragging=false});
 document.querySelectorAll('[data-timer]').forEach(b=>b.addEventListener('click',()=>setSleepTimer(Number(b.dataset.timer))));
 document.querySelectorAll('[data-theme-choice]').forEach(b=>b.addEventListener('click',()=>{
  const theme=b.dataset.themeChoice;document.body.dataset.theme=theme;localStorage.setItem('afterglow-theme',theme);
  document.querySelectorAll('[data-theme-choice]').forEach(btn=>btn.classList.toggle('active',btn===b));
 }));
-const savedTheme=localStorage.getItem('afterglow-theme');if(['midnight','moss','dusk'].includes(savedTheme)){document.body.dataset.theme=savedTheme;document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===savedTheme))}
-async function loadFFmpeg(){
- if(ffmpegLoadPromise)return ffmpegLoadPromise;
- ffmpegLoadPromise=(async()=>{
-  if(!window.FFmpeg||!window.FFmpeg.createFFmpeg)throw new Error('Không tải được FFmpeg. Kiểm tra kết nối mạng rồi thử lại.');
-  ffmpeg=window.FFmpeg.createFFmpeg({log:false,corePath:'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js',mainName:'main'});
-  await ffmpeg.load();return ffmpeg;
- })();
- try{return await ffmpegLoadPromise}catch(e){ffmpegLoadPromise=null;throw e}
+const savedTheme=localStorage.getItem('afterglow-theme');
+if(['midnight','moss','dusk'].includes(savedTheme)){document.body.dataset.theme=savedTheme;document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===savedTheme))}
+function validTikTokUrl(value){
+ try{const u=new URL(value);return ['tiktok.com','www.tiktok.com','m.tiktok.com','vm.tiktok.com','vt.tiktok.com'].includes(u.hostname.toLowerCase())||u.hostname.toLowerCase().endsWith('.tiktok.com')}catch(e){return false}
 }
-function cleanFileName(name){return (name||'tiktok-video').replace(/\.[^.]+$/,'').replace(/[\\/:*?"<>|]+/g,' ').trim().slice(0,90)||'tiktok-video'}
-async function isAudioPayload(blob,contentType){
- const type=(contentType||blob.type||'').toLowerCase();
- if(type.startsWith('audio/'))return true;
- const head=new Uint8Array(await blob.slice(0,16).arrayBuffer());
- const ascii=(start,end)=>String.fromCharCode(...head.slice(start,end));
- if(ascii(0,3)==='ID3'||ascii(0,4)==='OggS'||(ascii(0,4)==='RIFF'&&ascii(8,12)==='WAVE'))return true;
- if(ascii(4,8)==='ftyp'&&type.includes('audio'))return true;
- if(head.length>1&&head[0]===0xff&&(head[1]&0xe0)===0xe0)return true;
- return false;
+function idFromUrl(value){
+ const match=value.match(/\/(?:video|photo|player\/v1)\/(\d{8,})/i);
+ return match?match[1]:null;
 }
-async function extractAudioFromVideo(file,title,author){
- if(!file||!file.size)throw new Error('Tệp không hợp lệ hoặc có dung lượng bằng 0.');
- if(await isAudioPayload(file,file.type)){
-  const id=await saveSong(title||cleanFileName(file.name),author||'Audio có sẵn',file);
-  loadSavedSongs();const index=songs.findIndex(s=>s.id===id);if(index>=0)playSongAtIndex(index);
-  setStatus('Nguồn đã là audio. Đã lưu trực tiếp, không cần chuyển mã.');
-  return file;
- }
- if(file.size>150*1024*1024)throw new Error('Video vượt quá 150 MB. Hãy chọn file nhỏ hơn để tránh hết bộ nhớ trình duyệt.');
- setStatus('Đang xử lý video…');
- const engine=await loadFFmpeg();
- const inputName='source_video.mp4';
- const outputs=[
-  {name:'extracted_audio.m4a',args:['-c:a','copy','-f','ipod'],type:'audio/mp4',label:'giữ nguyên chất lượng'},
-  {name:'extracted_audio.webm',args:['-c:a','copy','-f','webm'],type:'audio/webm',label:'giữ nguyên chất lượng'},
-  {name:'extracted_audio_aac.m4a',args:['-c:a','aac','-b:a','192k','-f','ipod'],type:'audio/mp4',label:'AAC 192 kbps'}
- ];
- let savedBlob=null,lastError=null;
+async function resolveShortUrl(value){
+ const endpoint='https://www.tiktok.com/oembed?url='+encodeURIComponent(value);
  try{
-  try{engine.FS('unlink',inputName)}catch(e){}
-  for(const out of outputs){try{engine.FS('unlink',out.name)}catch(e){}}
-  setStatus('Đang nạp video…');
-  engine.FS('writeFile',inputName,new Uint8Array(await file.arrayBuffer()));
-  for(let i=0;i<outputs.length;i++){
-   const out=outputs[i];
-   setStatus(i===0?'Đang tách âm thanh…':i===1?'Đang thử định dạng khác…':'Đang chuyển sang AAC…');
-   try{
-    await engine.run('-i',inputName,'-map','0:a:0','-vn',...out.args,out.name);
-    const raw=engine.FS('readFile',out.name);
-    if(!raw||!raw.length)throw new Error('Track audio rỗng.');
-    savedBlob=new Blob([raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength)],{type:out.type});
-    break;
-   }catch(e){lastError=e;try{engine.FS('unlink',out.name)}catch(ignore){} if(/can only run one command at a time/i.test(e.message||String(e))){try{engine.exit()}catch(ignore){} ffmpeg=null;ffmpegLoadPromise=null;throw new Error('FFmpeg vẫn đang bận từ tác vụ trước đó. Bộ xử lý đã được đặt lại; hãy thử lại sau vài giây.');}}
-  }
-  if(!savedBlob){const detail=lastError&&(lastError.message||String(lastError));throw new Error('Không thể trích xuất âm thanh.'+(detail?' Chi tiết FFmpeg: '+detail.slice(0,260):' Không có thông tin lỗi chi tiết.')+' File: '+(file.type||'không rõ định dạng')+', '+(file.size/1024/1024).toFixed(1)+' MB.');}
-  const id=await saveSong(title||cleanFileName(file.name),author||'TikTok video',savedBlob);
-  loadSavedSongs();const index=songs.findIndex(s=>s.id===id);if(index>=0)playSongAtIndex(index);
-  setStatus('Đã thêm nhạc vào playlist.');
-  return savedBlob;
- }finally{
-  try{engine.FS('unlink',inputName)}catch(e){}
-  for(const out of outputs){try{engine.FS('unlink',out.name)}catch(e){}}
- }
-}
-async function extractFromLocalFile(file){
- if(!file)return;
- const isAudio=file.type.startsWith('audio/');
- if(extractionBusy&&!isAudio){setStatus('Đang xử lý video/TikTok. Hãy đợi tác vụ đó kết thúc rồi thử lại video khác.',true);return;}
- $('selectedFile').textContent=file.name;
- if(isAudio){
-  try{
-   const id=await saveSong(cleanFileName(file.name),'File trên thiết bị',file);
-   await loadSavedSongs();const index=songs.findIndex(s=>s.id===id);if(index>=0)playSongAtIndex(index);
-   setStatus('Đã thêm nhạc vào playlist.');
-  }catch(e){setStatus(e.message||'Không thể thêm tệp.',true)}
-  finally{$('videoFile').value=''}
-  return;
- }
- setBusy(true);
+  const response=await fetch(endpoint);if(response.ok){const result=await response.json();const fromHtml=String(result.html||'').match(/player\/v1\/(\d{8,})/);if(fromHtml)return {postId:fromHtml[1],title:result.title||'TikTok video',author:result.author_name||'TikTok'}}
+ }catch(e){}
+ const api='https://www.tikwm.com/api/?url='+encodeURIComponent(value);
  try{
-  await extractAudioFromVideo(file,cleanFileName(file.name),'Video trên thiết bị');
-  setStatus('Đã tách âm thanh từ video và thêm vào playlist.');
- }catch(e){setStatus(e.message||'Không thể thêm tệp.',true)}
- finally{setBusy(false);$('videoFile').value=''}
+  const response=await fetch(api);if(!response.ok)throw new Error('HTTP '+response.status);
+  const json=await response.json(),d=json.data||{};
+  const id=String(d.id||d.aweme_id||d.video_id||'');
+  if(json.code===0&&/^\d{8,}$/.test(id))return {postId:id,title:d.title||'TikTok video',author:d.author&&d.author.nickname||'TikTok'};
+ }catch(e){}
+ throw new Error('Không phân giải được link rút gọn. Hãy mở TikTok và sao chép link đầy đủ của bài đăng.');
 }
-$('videoFile').addEventListener('change',e=>extractFromLocalFile(e.target.files&&e.target.files[0]));
-function absoluteMediaUrl(value){
- if(!value||typeof value!=='string')return '';
- try{return new URL(value,'https://www.tikwm.com').href}catch(e){return ''}
-}
-async function isVideoPayload(blob,contentType){
- const type=(contentType||blob.type||'').toLowerCase();
- if(type.startsWith('image/')||await isAudioPayload(blob,contentType))return false;
- if(type.startsWith('video/'))return true;
- const head=new Uint8Array(await blob.slice(0,12).arrayBuffer());
- const ascii=(start,end)=>String.fromCharCode(...head.slice(start,end));
- return ascii(4,8)==='ftyp'||(head[0]===0x1a&&head[1]===0x45&&head[2]===0xdf&&head[3]===0xa3);
-}
-async function fetchFirstValidMedia(urls,kind){
- const errors=[];
- for(const url of [...new Set(urls.filter(Boolean))]){
-  try{
-   const response=await fetch(url);
-   if(!response.ok)throw new Error('HTTP '+response.status);
-   const blob=await response.blob();
-   if(!blob.size)throw new Error('Tệp rỗng');
-   const type=response.headers.get('content-type')||blob.type||'';
-   if(kind==='video'){
-    if(!(await isVideoPayload(blob,type)))throw new Error('Nguồn trả về '+(type||'không rõ định dạng')+', không phải video');
-   }else if(!type.toLowerCase().startsWith('audio/')){
-    const sig=await blob.slice(0,3).text();
-    if(!(type.toLowerCase().includes('mpeg')||sig==='ID3'||(blob.size>2&&new Uint8Array(await blob.slice(0,2).arrayBuffer())[0]===0xff)))throw new Error('Nguồn không phải audio ('+(type||'không rõ định dạng')+')');
-   }
-   return {blob,type,url};
-  }catch(e){errors.push(e.message||String(e))}
- }
- throw new Error('Không tải được '+(kind==='video'?'video':'track nhạc')+'. '+errors.slice(0,3).join(' | '));
-}
-async function saveTikTokMusic(urls,title,author){
- const media=await fetchFirstValidMedia(urls,'audio');
- const blob=new Blob([media.blob],{type:media.type||media.blob.type||'audio/mpeg'});
- const id=await saveSong(title||'TikTok music',author||'TikTok',blob);
- loadSavedSongs();const index=songs.findIndex(s=>s.id===id);if(index>=0)playSongAtIndex(index);
- return blob;
-}
-async function extractFromTikTok(){
- if(extractionBusy){setStatus('Đang xử lý một tác vụ khác. Hãy đợi tác vụ hiện tại kết thúc rồi thử lại.',true);return;}
- const url=$('tiktokUrl').value.trim();
- if(!url)return setStatus('Bạn hãy dán link TikTok trước.',true);
- if(!/^https?:\\/\\/(www\\.)?(vm\\.tiktok\\.com|vt\\.tiktok\\.com|m\\.tiktok\\.com|tiktok\\.com)\\//i.test(url))return setStatus('Link không giống URL TikTok hợp lệ.',true);
- setBusy(true);
+async function addTikTok(){
+ if(resolveBusy)return;
+ const value=$('tiktokUrl').value.trim();
+ if(!value){setStatus('Bạn hãy dán link TikTok trước.',true);return}
+ if(!validTikTokUrl(value)){setStatus('Đây không phải link TikTok hợp lệ.',true);return}
+ resolveBusy=true;$('addBtn').disabled=true;$('addBtn').textContent='Đang thêm…';
  try{
-  setStatus('Đang nhận dạng bài TikTok…');
-  const api='https://www.tikwm.com/api/?url='+encodeURIComponent(url);
-  const apiResponse=await fetch(api);
-  if(!apiResponse.ok)throw new Error('Dịch vụ TikTok không phản hồi. Hãy thử lại hoặc chọn file đã tải về.');
-  const json=await apiResponse.json();
-  if(json.code!==0||!json.data)throw new Error(json.msg||'Không lấy được bài đăng. Bài có thể riêng tư, bị gỡ hoặc API tạm thời không hỗ trợ.');
-  const d=json.data, info=d.music_info||{};
-  const isPhoto=/\\/photo\\//i.test(url)||((Array.isArray(d.images)&&d.images.length>0)||String(d.type||'').toLowerCase()==='photo');
-  const title=d.title||info.title||'TikTok audio';
-  const author=(d.author&&d.author.nickname)||info.author||'TikTok';
-  const musicUrls=[absoluteMediaUrl(info.play),absoluteMediaUrl(d.music)];
-  if(isPhoto){
-   setStatus('Bài ảnh/slideshow: đang lấy track nhạc gắn với bài đăng…');
-   await saveTikTokMusic(musicUrls,title,author);
-   $('tiktokUrl').value='';
-   setStatus('Đã lưu nhạc của bài ảnh vào playlist offline.');
-   return;
-  }
-  const videoUrls=[absoluteMediaUrl(d.hdplay),absoluteMediaUrl(d.play),absoluteMediaUrl(d.wmplay)];
-  let videoBlob=null,videoType='';
-  try{
-   setStatus('Đang tải video chất lượng cao…');
-   const media=await fetchFirstValidMedia(videoUrls,'video');
-   videoBlob=media.blob;videoType=media.type;
-  }catch(videoError){
-   if(musicUrls.some(Boolean)){
-    setStatus('Không lấy được luồng video. Đang thử track nhạc gốc của bài…');
-    await saveTikTokMusic(musicUrls,title,author);
-    $('tiktokUrl').value='';
-    setStatus('Đã lưu track nhạc TikTok. Không lấy được audio trộn trong video nên đã dùng track gốc làm phương án dự phòng.');
-    return;
-   }
-   throw videoError;
-  }
-  const file=new File([videoBlob],'tiktok-video.'+(videoType.toLowerCase().includes('webm')?'webm':'mp4'),{type:videoType||'video/mp4'});
-  try{
-   await extractAudioFromVideo(file,title,author);
-   $('tiktokUrl').value='';
-   setStatus('Đã tách audio trực tiếp từ video chất lượng cao và lưu offline.');
-  }catch(extractError){
-   if(musicUrls.some(Boolean)){
-    setStatus('Video không cho tách audio. Đang dùng track nhạc gốc làm phương án dự phòng…');
-    await saveTikTokMusic(musicUrls,title,author);
-    $('tiktokUrl').value='';
-    setStatus('Đã lưu track nhạc TikTok làm dự phòng vì không tách được audio từ video.');
-   }else throw extractError;
-  }
- }catch(e){setStatus(e.message||'Không thể lấy nhạc từ bài TikTok này.',true)}
- finally{setBusy(false)}
+  setStatus('Đang nhận dạng bài đăng TikTok…');
+  let postId=idFromUrl(value),meta={postId,title:'TikTok video',author:'TikTok'};
+  if(!postId)meta=await resolveShortUrl(value);else meta.postId=postId;
+  if(posts.some(p=>p.postId===meta.postId)){const index=posts.findIndex(p=>p.postId===meta.postId);playPostAt(index,true);$('tiktokUrl').value='';setStatus('Video đã có trong playlist. Đang mở video.');return}
+  const record={postId:meta.postId,url:value,title:meta.title||'TikTok video',author:meta.author||'TikTok',position:Date.now()};
+  const id=await savePost(record);await loadPosts();
+  const index=posts.findIndex(p=>p.id===id);
+  $('tiktokUrl').value='';
+  if(index>=0)playPostAt(index,true);
+  setStatus('Đã thêm video vào playlist. Đang mở TikTok Player.');
+ }catch(e){setStatus(e.message||'Không thể thêm video TikTok này.',true)}
+ finally{resolveBusy=false;$('addBtn').disabled=false;$('addBtn').textContent='Thêm vào playlist'}
 }
-$('extractBtn').addEventListener('click',extractFromTikTok);
-$('tiktokUrl').addEventListener('keydown',e=>{if(e.key==='Enter')extractFromTikTok()});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&!audio.paused){/* Native media playback is left to the browser. */}});
-initDB().catch(e=>setStatus('Không mở được thư viện offline: '+(e.message||'IndexedDB error'),true));
+$('addBtn').addEventListener('click',addTikTok);
+$('tiktokUrl').addEventListener('keydown',e=>{if(e.key==='Enter')addTikTok()});
+initDB().catch(e=>setStatus('Không mở được playlist trên trình duyệt: '+(e.message||'IndexedDB error'),true));
 </script>
 </body>
 </html>
