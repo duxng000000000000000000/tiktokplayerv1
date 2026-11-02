@@ -201,6 +201,48 @@ body[data-theme="musicbaby"] .tracktitle{
  .controls{gap:7px}
 }
 
+
+/* Hard layout guard: long TikTok captions must never resize the player */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+.shell,.layout,.layout>main,.layout>aside,.now{box-sizing:border-box;min-width:0;max-width:100%}
+.layout>main,.layout>aside{width:100%}
+.now{width:100%;overflow:hidden}
+html body .now #trackTitle,
+html body .now .tracktitle{
+ display:block!important;
+ box-sizing:border-box!important;
+ width:100%!important;
+ min-width:0!important;
+ max-width:100%!important;
+ height:auto!important;
+ max-height:1.35em!important;
+ margin:0!important;
+ line-height:1.35!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ overflow-wrap:normal!important;
+ word-break:normal!important;
+}
+html body .now #trackArtist,
+html body .now .artist{
+ display:block!important;
+ box-sizing:border-box!important;
+ width:100%!important;
+ min-width:0!important;
+ max-width:100%!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+}
+@media(max-width:760px){
+ .layout{grid-template-columns:minmax(0,1fr)!important}
+ .layout>main,.layout>aside{min-width:0!important;width:100%!important}
+ .now{padding:15px!important}
+ html body .now #trackTitle,
+ html body .now .tracktitle{font-size:16px!important;line-height:1.35!important}
+}
+
 </style>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 </head>
