@@ -286,7 +286,7 @@ async function playTrack(i,options={}){
  if(shuffle&&!preserveShuffle&&!fromHistory){shuffleHistory=[];rebuildShuffleBag(false)}
  let t=tracks[i];
  render();
- $('trackTitle').textContent=t.title||'TikTok video';$('trackTitle').title=t.title||'TikTok video';
+ $('trackTitle').textContent=t.title||'TikTok video';$('trackTitle').title=t.title||'TikTok video';$('trackTitle').title=t.title||'TikTok video';
  $('trackArtist').textContent=t.author||'TikTok · MP3';
  $('coverImg').src=t.cover||DEFAULT_COVER;
  status('Đang lấy thông tin bài hát…');
