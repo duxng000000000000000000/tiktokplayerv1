@@ -143,6 +143,64 @@ body.is-playing .art{animation-play-state:running}
 @keyframes afterglowDiscSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @media(max-width:760px){.art{width:155px;height:155px;max-width:60%}}
 
+
+/* Keep long video captions inside the player on desktop and mobile */
+.tracktitle{
+ display:-webkit-box;
+ -webkit-box-orient:vertical;
+ -webkit-line-clamp:2;
+ width:100%;
+ min-width:0;
+ max-width:100%;
+ max-height:2.5em;
+ overflow:hidden;
+ white-space:normal;
+ overflow-wrap:anywhere;
+ word-break:normal;
+ line-height:1.25;
+ text-overflow:ellipsis;
+ font-size:clamp(15px,2.1vw,18px);
+}
+.artist{
+ display:block;
+ width:100%;
+ min-width:0;
+ max-width:100%;
+ overflow:hidden;
+ white-space:nowrap;
+ text-overflow:ellipsis;
+}
+body[data-theme="musicbaby"] .tracktitle{
+ display:-webkit-box;
+ -webkit-box-orient:vertical;
+ -webkit-line-clamp:2;
+ font-size:clamp(19px,2.5vw,24px);
+ line-height:1.2;
+ max-height:2.4em;
+ overflow-wrap:anywhere;
+ white-space:normal;
+}
+@media(max-width:760px){
+ .tracktitle{
+  font-size:16px;
+  line-height:1.25;
+  max-height:2.5em;
+  -webkit-line-clamp:2;
+ }
+ body[data-theme="musicbaby"] .tracktitle{
+  font-size:21px;
+  line-height:1.2;
+  max-height:2.4em;
+ }
+ .artist{font-size:10px}
+ body[data-theme="musicbaby"] .artist{font-size:18px}
+}
+@media(max-width:380px){
+ .tracktitle{font-size:15px}
+ body[data-theme="musicbaby"] .tracktitle{font-size:19px}
+ .controls{gap:7px}
+}
+
 </style>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 </head>
@@ -228,7 +286,7 @@ async function playTrack(i,options={}){
  if(shuffle&&!preserveShuffle&&!fromHistory){shuffleHistory=[];rebuildShuffleBag(false)}
  let t=tracks[i];
  render();
- $('trackTitle').textContent=t.title||'TikTok video';
+ $('trackTitle').textContent=t.title||'TikTok video';$('trackTitle').title=t.title||'TikTok video';
  $('trackArtist').textContent=t.author||'TikTok · MP3';
  $('coverImg').src=t.cover||DEFAULT_COVER;
  status('Đang lấy thông tin bài hát…');
