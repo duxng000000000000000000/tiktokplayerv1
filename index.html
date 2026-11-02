@@ -24,7 +24,110 @@ button,input{font:inherit}button{cursor:pointer}.shell{max-width:980px;margin:au
 .now{padding:21px}.art{height:220px;border-radius:17px;border:1px solid var(--line);background:radial-gradient(circle at 50% 40%,var(--glow),transparent 60%),var(--panel2);display:grid;place-items:center;font-size:65px;color:var(--accent);margin-bottom:18px}.tracktitle{font-size:17px;font-weight:800;overflow-wrap:anywhere}.artist{font-size:11px;color:var(--muted);margin-top:5px}.progress{width:100%;accent-color:var(--accent);margin:20px 0 5px}.times{display:flex;justify-content:space-between;color:var(--muted);font:10px 'DM Mono'}.controls{display:flex;justify-content:center;align-items:center;gap:11px;margin:17px 0 2px}.control{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:15px}.control.main{width:51px;height:51px;background:var(--accent);color:#111820;border:0;font-size:19px}.control.active{color:var(--accent);border-color:var(--accent)}
 .playlist{max-height:440px;overflow:auto}.track{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid transparent;border-radius:12px;cursor:pointer}.track:hover{background:var(--panel2)}.track.active{background:var(--glow);border-color:var(--line)}.trackicon{width:35px;height:40px;border-radius:9px;background:var(--panel2);display:grid;place-items:center;color:var(--accent);flex:none}.trackinfo{min-width:0;flex:1}.trackname{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.trackmeta{font-size:10px;color:var(--muted);margin-top:3px}.remove{border:0;background:transparent;color:var(--muted);padding:7px}.empty{text-align:center;color:var(--muted);font-size:11px;padding:24px 10px}.timergrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.timergrid button{padding:10px 4px}.timerstatus{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5}.theme-picker{margin-top:18px}.theme-picker .themes{justify-content:flex-start}.theme-picker .hint{margin-top:8px}.footer{text-align:center;color:var(--muted);font:10px 'DM Mono';margin-top:14px;line-height:1.8}
 @media(max-width:760px){body{padding:14px 12px 28px}.topbar{align-items:flex-start;flex-direction:column}.layout{grid-template-columns:1fr;gap:0}.panel{padding:15px;border-radius:18px}.now{padding:17px}.art{height:175px}.playlist{max-height:320px}}
+
+/* Musicbaby — Pixel Pink Y2K theme */
+body[data-theme="musicbaby"]{
+ color-scheme:light;
+ --bg:#ffd1dc;--panel:#fff0f5;--panel2:#ffe6ee;--text:#8b263e;
+ --muted:#d34f79;--line:#ff6699;--accent:#ff3366;--glow:#ffb6c188;
+ --danger:#c62828;--shadow:5px 5px 0 #8b263e;
+ background-color:#ffd1dc;
+ background-image:radial-gradient(#ffb6c1 2px,transparent 2px),radial-gradient(#ffb6c1 2px,#ffd1dc 2px);
+ background-size:20px 20px;background-position:0 0,10px 10px;
+ font-family:'VT323',monospace;font-size:19px;padding:12px 12px 36px;
+}
+body[data-theme="musicbaby"] .shell{max-width:980px}
+body[data-theme="musicbaby"] .brandname,
+body[data-theme="musicbaby"] .ptitle,
+body[data-theme="musicbaby"] .kicker,
+body[data-theme="musicbaby"] .eyebrow{
+ font-family:'Press Start 2P',cursive;letter-spacing:0;text-transform:uppercase;
+}
+body[data-theme="musicbaby"] .brandname{font-size:12px;color:#ff3366;text-shadow:2px 2px #fff,4px 4px #ff99bb}
+body[data-theme="musicbaby"] .sub{font-family:'VT323',monospace;font-size:17px;color:#d34f79;letter-spacing:0}
+body[data-theme="musicbaby"] .mark{border:3px solid #ff6699;border-radius:9px;background:#fff0f5;color:#ff3366;box-shadow:2px 2px 0 #8b263e}
+body[data-theme="musicbaby"] .hero{background:#fff0f5;border:4px solid #ff6699;border-radius:12px;padding:14px;margin-bottom:18px;box-shadow:inset -4px -4px #ffb6c1,inset 4px 4px #fff,5px 5px #8b263e}
+body[data-theme="musicbaby"] .eyebrow{font-size:8px;color:#ff3366}
+body[data-theme="musicbaby"] .hero h1{font-family:'Press Start 2P',cursive;font-size:clamp(13px,2vw,19px);line-height:1.65;letter-spacing:0;color:#ff3366;text-shadow:2px 2px #fff,4px 4px #ff99bb}
+body[data-theme="musicbaby"] .hero p{font-family:'VT323',monospace;font-size:20px;color:#8b263e;line-height:1.35}
+body[data-theme="musicbaby"] .panel{
+ background:#fff0f5;border:4px solid #ff6699;border-radius:12px;padding:14px;
+ box-shadow:inset -4px -4px 0 #ffb6c1,inset 4px 4px 0 #fff,5px 5px 0 #8b263e;
+ backdrop-filter:none;margin-bottom:16px
+}
+body[data-theme="musicbaby"] .head{
+ background:#ff6699;color:#fff;margin:-14px -14px 12px;padding:7px 10px;
+ border-radius:6px 6px 0 0;min-height:30px
+}
+body[data-theme="musicbaby"] .ptitle{font-size:8px;color:#fff;line-height:1.7}
+body[data-theme="musicbaby"] .kicker{font-family:'VT323',monospace;font-size:16px;color:#fff}
+body[data-theme="musicbaby"] .input{
+ font-family:'VT323',monospace;font-size:21px;background:#fff;color:#8b263e;
+ border:3px solid #ff99bb;border-radius:6px;box-shadow:inset 2px 2px #ffd1dc
+}
+body[data-theme="musicbaby"] .input::placeholder{color:#d77b98}
+body[data-theme="musicbaby"] .btn,
+body[data-theme="musicbaby"] .control,
+body[data-theme="musicbaby"] .theme{
+ font-family:'Press Start 2P',cursive;font-size:8px;color:#fff;background:#ff6699;
+ border:3px solid #8b263e;border-radius:8px;box-shadow:0 4px 0 #8b263e;
+ padding:10px 8px;transition:transform .1s,box-shadow .1s
+}
+body[data-theme="musicbaby"] .btn:hover,
+body[data-theme="musicbaby"] .control:hover,
+body[data-theme="musicbaby"] .theme:hover{border-color:#8b263e;transform:translateY(-1px)}
+body[data-theme="musicbaby"] .btn:active,
+body[data-theme="musicbaby"] .control:active,
+body[data-theme="musicbaby"] .theme:active{transform:translateY(3px);box-shadow:0 1px 0 #8b263e}
+body[data-theme="musicbaby"] .btn.primary,
+body[data-theme="musicbaby"] .control.main{background:#ff3366;color:#fff;border-color:#8b263e}
+body[data-theme="musicbaby"] .btn:disabled{opacity:.55}
+body[data-theme="musicbaby"] .control{width:42px;height:42px;border-radius:50%;padding:0;font-size:9px}
+body[data-theme="musicbaby"] .control.main{width:52px;height:52px;font-size:12px}
+body[data-theme="musicbaby"] .control.active,
+body[data-theme="musicbaby"] .theme.active{background:#ff0055;color:#fff;border-color:#5a001a;box-shadow:0 4px 0 #5a001a}
+body[data-theme="musicbaby"] .art{
+ height:190px;width:190px;max-width:65%;aspect-ratio:1;margin:0 auto 20px;
+ border:4px solid #ff6699;border-radius:50%;background:#ffcdd2;color:#ff3366;
+ box-shadow:0 0 0 4px #ffe6ee,0 0 0 7px #ff80ab,5px 5px 0 #8b263e;
+ font-family:'VT323',monospace;font-size:72px;
+}
+body[data-theme="musicbaby"] .tracktitle{font-family:'VT323',monospace;font-size:26px;color:#d81b60}
+body[data-theme="musicbaby"] .artist{font-family:'VT323',monospace;font-size:20px;color:#ff4081}
+body[data-theme="musicbaby"] .progress{accent-color:#ff3366}
+body[data-theme="musicbaby"] .times{font-family:'VT323',monospace;font-size:17px;color:#8b263e}
+body[data-theme="musicbaby"] .status{
+ background:#ffe6ee;border:2px dashed #ff80ab;border-radius:8px;color:#8b263e;
+ font-family:'VT323',monospace;font-size:18px
+}
+body[data-theme="musicbaby"] .dot{background:#ff3366}
+body[data-theme="musicbaby"] .track{border:2px solid #ffb6c1;border-radius:6px;background:#fff;padding:8px;margin-bottom:6px}
+body[data-theme="musicbaby"] .track:hover,
+body[data-theme="musicbaby"] .track.active{background:#ffe6ee;border-color:#ff3366}
+body[data-theme="musicbaby"] .trackicon{background:#ffcdd2;color:#d81b60;border:2px solid #ff80ab;border-radius:6px}
+body[data-theme="musicbaby"] .trackname{font-family:'VT323',monospace;font-size:20px;color:#8b263e}
+body[data-theme="musicbaby"] .trackmeta{font-family:'VT323',monospace;font-size:17px;color:#d34f79}
+body[data-theme="musicbaby"] .remove{font-family:'VT323',monospace;color:#c62828}
+body[data-theme="musicbaby"] .empty,
+body[data-theme="musicbaby"] .hint,
+body[data-theme="musicbaby"] .timerstatus{font-family:'VT323',monospace;font-size:18px;color:#d34f79}
+body[data-theme="musicbaby"] .theme-picker .themes{gap:8px}
+body[data-theme="musicbaby"] .theme-picker .themes span{font-family:'Press Start 2P',cursive;font-size:8px;color:#8b263e}
+body[data-theme="musicbaby"] .footer{font-family:'Press Start 2P',cursive;font-size:7px;color:#d34f79}
+body[data-theme="musicbaby"] .turnstile-wrap{background:#ffe6ee;border-radius:6px}
+body[data-theme="musicbaby"] .art{animation:musicbabyDisc 10s linear infinite;animation-play-state:paused}
+body[data-theme="musicbaby"].is-playing .art{animation-play-state:running}
+@keyframes musicbabyDisc{to{transform:rotate(360deg)}}
+@media(max-width:760px){
+ body[data-theme="musicbaby"]{padding:12px 10px 30px}
+ body[data-theme="musicbaby"] .hero h1{font-size:13px}
+ body[data-theme="musicbaby"] .art{height:auto;width:150px;max-width:58%}
+ body[data-theme="musicbaby"] .panel{padding:13px}
+ body[data-theme="musicbaby"] .head{margin:-13px -13px 12px}
+}
+
 </style>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 </head>
 <body data-theme="midnight">
 <div class="shell">
@@ -72,7 +175,7 @@ button,input{font:inherit}button{cursor:pointer}.shell{max-width:980px;margin:au
 </div>
 <section class="panel theme-picker">
  <div class="head"><div class="ptitle">Appearance</div><div class="kicker">CHOOSE YOUR MOOD</div></div>
- <div class="themes"><span>THEME</span><button class="theme active" data-theme="midnight">Midnight</button><button class="theme" data-theme="moss">Moss</button><button class="theme" data-theme="dusk">Dusk</button></div>
+ <div class="themes"><span>THEME</span><button class="theme active" data-theme="midnight">Midnight</button><button class="theme" data-theme="moss">Moss</button><button class="theme" data-theme="dusk">Dusk</button><button class="theme" data-theme="musicbaby">Musicbaby</button></div>
  <div class="hint">Tùy chỉnh không gian nghe nhạc. Theme được lưu trên trình duyệt này.</div>
 </section>
 <div class="footer">AFTERGLOW · PRIVATE MP3 LIBRARY</div>
@@ -107,7 +210,7 @@ $('shuffle').addEventListener('click',()=>{shuffle=!shuffle;$('shuffle').classLi
 audio.addEventListener('play',updatePlay);audio.addEventListener('pause',updatePlay);audio.addEventListener('timeupdate',()=>{if(!seekDrag&&Number.isFinite(audio.duration)&&audio.duration>0)$('progress').value=audio.currentTime/audio.duration*1000;$('elapsed').textContent=time(audio.currentTime);$('total').textContent=time(audio.duration);if('mediaSession'in navigator&&Number.isFinite(audio.duration)&&audio.duration>0&&navigator.mediaSession.setPositionState){try{navigator.mediaSession.setPositionState({duration:audio.duration,playbackRate:audio.playbackRate,position:audio.currentTime})}catch(e){}}});audio.addEventListener('loadedmetadata',()=>{$('total').textContent=time(audio.duration)});audio.addEventListener('ended',()=>{if(repeat===1){audio.currentTime=0;audio.play()}else next()});audio.addEventListener('error',()=>status('Không tải được MP3. Hãy thử phát lại để tạo đường dẫn mới.',true));
 $('progress').addEventListener('pointerdown',()=>seekDrag=true);$('progress').addEventListener('pointerup',()=>seekDrag=false);$('progress').addEventListener('change',e=>{if(Number.isFinite(audio.duration))audio.currentTime=Number(e.target.value)/1000*audio.duration;seekDrag=false});
 function cancelTimer(){if(timer)clearTimeout(timer);timer=null;$('timerStatus').textContent='Đã hủy hẹn giờ.'}document.querySelectorAll('[data-min]').forEach(b=>b.addEventListener('click',()=>{cancelTimer();const m=Number(b.dataset.min);$('timerStatus').textContent='Nhạc sẽ tự dừng sau '+m+' phút.';timer=setTimeout(()=>{audio.pause();timer=null;$('timerStatus').textContent='Đã dừng nhạc theo hẹn giờ.'},m*60000)}));
-document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{document.body.dataset.theme=b.dataset.theme;localStorage.setItem('afterglow-theme',b.dataset.theme);document.querySelectorAll('[data-theme]').forEach(x=>x.classList.toggle('active',x===b))}));const saved=localStorage.getItem('afterglow-theme');if(['midnight','moss','dusk'].includes(saved)){document.body.dataset.theme=saved;document.querySelectorAll('[data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===saved))}
+document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{document.body.dataset.theme=b.dataset.theme;localStorage.setItem('afterglow-theme',b.dataset.theme);document.querySelectorAll('[data-theme]').forEach(x=>x.classList.toggle('active',x===b))}));const saved=localStorage.getItem('afterglow-theme');if(['midnight','moss','dusk','musicbaby'].includes(saved)){document.body.dataset.theme=saved;document.querySelectorAll('[data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===saved))}
 function onTurnstileLoad(){try{if(!window.turnstile||typeof turnstile.render!=='function')throw new Error('Cloudflare API chưa sẵn sàng');turnstileWidget=turnstile.render('#turnstile',{sitekey:SITEKEY,theme:'dark',callback:token=>{turnstileToken=token;$('add').disabled=false;status('Xác minh bảo mật thành công.')},'expired-callback':()=>{turnstileToken='';$('add').disabled=true;status('Mã xác minh đã hết hạn. Hãy xác minh lại.',true)},'error-callback':code=>{turnstileToken='';$('add').disabled=true;status('Cloudflare CAPTCHA lỗi mã '+String(code)+'. Kiểm tra hostname/sitekey hoặc thử tắt VPN, trình chặn quảng cáo.',true);console.error('Turnstile error:',code);return true}});status('Đã tải CAPTCHA. Đang xác minh bảo mật…')}catch(e){turnstileToken='';$('add').disabled=true;status('Không khởi tạo được CAPTCHA: '+e.message,true);console.error(e)}}
 function turnstileScriptFailed(){turnstileToken='';$('add').disabled=true;status('Không tải được script Cloudflare CAPTCHA. Mạng hoặc trình duyệt có thể đang chặn challenges.cloudflare.com.',true)}
 openDB().catch(e=>status('Không mở được playlist: '+e.message,true));
