@@ -10,7 +10,7 @@
 <title>Afterglow — Your music space</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad" defer onerror="turnstileScriptFailed()"></script>
 <style>
 :root{color-scheme:dark;--bg:#10151d;--panel:rgba(27,37,51,.9);--panel2:#202c3b;--text:#e7edf5;--muted:#91a0b4;--line:rgba(176,198,224,.15);--accent:#9bb8d8;--glow:rgba(115,160,210,.16);--danger:#e39b9b;--shadow:0 18px 60px #0004}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0%,var(--glow),transparent 38%),var(--bg);color:var(--text);font-family:Manrope,system-ui,sans-serif;padding:25px 16px 42px;transition:.25s}
@@ -100,8 +100,9 @@ audio.addEventListener('play',updatePlay);audio.addEventListener('pause',updateP
 $('progress').addEventListener('pointerdown',()=>seekDrag=true);$('progress').addEventListener('pointerup',()=>seekDrag=false);$('progress').addEventListener('change',e=>{if(Number.isFinite(audio.duration))audio.currentTime=Number(e.target.value)/1000*audio.duration;seekDrag=false});
 function cancelTimer(){if(timer)clearTimeout(timer);timer=null;$('timerStatus').textContent='Đã hủy hẹn giờ.'}document.querySelectorAll('[data-min]').forEach(b=>b.addEventListener('click',()=>{cancelTimer();const m=Number(b.dataset.min);$('timerStatus').textContent='Nhạc sẽ tự dừng sau '+m+' phút.';timer=setTimeout(()=>{audio.pause();timer=null;$('timerStatus').textContent='Đã dừng nhạc theo hẹn giờ.'},m*60000)}));
 document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{document.body.dataset.theme=b.dataset.theme;localStorage.setItem('afterglow-theme',b.dataset.theme);document.querySelectorAll('[data-theme]').forEach(x=>x.classList.toggle('active',x===b))}));const saved=localStorage.getItem('afterglow-theme');if(['midnight','moss','dusk'].includes(saved)){document.body.dataset.theme=saved;document.querySelectorAll('[data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===saved))}
-function setupTurnstile(){if(!window.turnstile){setTimeout(setupTurnstile,300);return}turnstileWidget=turnstile.render('#turnstile',{sitekey:SITEKEY,theme:'dark',callback:token=>{turnstileToken=token;$('add').disabled=false},'expired-callback':()=>{turnstileToken='';$('add').disabled=true},'error-callback':()=>{turnstileToken='';$('add').disabled=true;status('Không tải được xác minh bảo mật. Hãy tải lại trang.',true)}})}
-setupTurnstile();openDB().catch(e=>status('Không mở được playlist: '+e.message,true));
+function onTurnstileLoad(){try{if(!window.turnstile||typeof turnstile.render!=='function')throw new Error('Cloudflare API chưa sẵn sàng');turnstileWidget=turnstile.render('#turnstile',{sitekey:SITEKEY,theme:'dark',callback:token=>{turnstileToken=token;$('add').disabled=false;status('Xác minh bảo mật thành công.')},'expired-callback':()=>{turnstileToken='';$('add').disabled=true;status('Mã xác minh đã hết hạn. Hãy xác minh lại.',true)},'error-callback':code=>{turnstileToken='';$('add').disabled=true;status('Cloudflare CAPTCHA lỗi mã '+String(code)+'. Kiểm tra hostname/sitekey hoặc thử tắt VPN, trình chặn quảng cáo.',true);console.error('Turnstile error:',code);return true}});status('Đã tải CAPTCHA. Đang xác minh bảo mật…')}catch(e){turnstileToken='';$('add').disabled=true;status('Không khởi tạo được CAPTCHA: '+e.message,true);console.error(e)}}
+function turnstileScriptFailed(){turnstileToken='';$('add').disabled=true;status('Không tải được script Cloudflare CAPTCHA. Mạng hoặc trình duyệt có thể đang chặn challenges.cloudflare.com.',true)}
+openDB().catch(e=>status('Không mở được playlist: '+e.message,true));
 </script>
 </body>
 </html>
