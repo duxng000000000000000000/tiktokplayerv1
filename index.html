@@ -126,6 +126,23 @@ body[data-theme="musicbaby"].is-playing .art{animation-play-state:running}
  body[data-theme="musicbaby"] .head{margin:-13px -13px 12px}
 }
 
+
+/* Shared Musicbaby-style album disc: available in every theme */
+.art{
+ width:190px;height:190px;max-width:65%;aspect-ratio:1;
+ margin:0 auto 20px;border-radius:50%;overflow:hidden;
+ display:block;position:relative;padding:0;
+ border:4px solid var(--accent);
+ background:var(--panel2);
+ box-shadow:0 0 0 4px var(--panel),0 0 0 7px var(--line),5px 5px 0 #0003;
+ animation:afterglowDiscSpin 10s linear infinite;
+ animation-play-state:paused;
+}
+.art img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
+body.is-playing .art{animation-play-state:running}
+@keyframes afterglowDiscSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@media(max-width:760px){.art{width:155px;height:155px;max-width:60%}}
+
 </style>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 </head>
@@ -139,7 +156,9 @@ body[data-theme="musicbaby"].is-playing .art{animation-play-state:running}
  <main>
   <section class="panel now">
    <div class="head"><div class="ptitle">Now playing</div><div class="kicker">AFTERGLOW PLAYER</div></div>
-   <div class="art">♫</div>
+   <div class="art" aria-label="Album cover">
+    <img id="coverImg" src="https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f38a.png" alt="Ảnh bìa bài hát">
+   </div>
    <div class="tracktitle" id="trackTitle">Chưa chọn bài hát</div><div class="artist" id="trackArtist">Thêm một link TikTok để bắt đầu</div>
    <audio id="audio" preload="metadata"></audio>
    <input class="progress" id="progress" type="range" min="0" max="1000" value="0" aria-label="Tua bài hát">
@@ -184,7 +203,7 @@ body[data-theme="musicbaby"].is-playing .art{animation-play-state:running}
 'use strict';
 const API='https://afterglow-api.dunginlon.workers.dev';
 const SITEKEY='0x4AAAAAAFv__fKuyP2EbSeK';
-const DB='AfterglowMP3LibraryV1',STORE='tracks';
+const DB='AfterglowMP3LibraryV1',STORE='tracks',DEFAULT_COVER='https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f38a.png';
 const $=id=>document.getElementById(id),audio=$('audio');
 let db,tracks=[],current=-1,shuffle=false,repeat=0,timer=null,turnstileWidget=null,turnstileToken='',busy=false,seekDrag=false,shuffleBag=[],shuffleHistory=[];
 function status(msg,error=false){$('status').classList.toggle('error',error);$('status').lastElementChild.textContent=msg}
@@ -192,19 +211,96 @@ function time(v){if(!Number.isFinite(v)||v<0)return '00:00';return String(Math.f
 function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE,{keyPath:'id',autoIncrement:true})};r.onerror=()=>reject(r.error);r.onsuccess=()=>{db=r.result;load().then(resolve).catch(reject)}})}
 function load(){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).getAll();r.onsuccess=()=>{tracks=(r.result||[]).sort((a,b)=>a.createdAt-b.createdAt);render();resolve()};r.onerror=()=>reject(r.error)})}
 function addRecord(data){return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite'),r=tx.objectStore(STORE).add({...data,createdAt:Date.now()});r.onsuccess=()=>resolve(r.result);tx.onerror=()=>reject(tx.error)})}
-function render(){const root=$('playlist');root.replaceChildren();$('count').textContent=tracks.length+' TRACKS';if(!tracks.length){const e=document.createElement('div');e.className='empty';e.textContent='Playlist đang trống';root.append(e);return}tracks.forEach((t,i)=>{const row=document.createElement('div');row.className='track'+(i===current?' active':'');row.addEventListener('click',()=>playTrack(i));const ic=document.createElement('div');ic.className='trackicon';ic.textContent='♫';const info=document.createElement('div');info.className='trackinfo';const name=document.createElement('div');name.className='trackname';name.textContent=t.title||'TikTok audio';const meta=document.createElement('div');meta.className='trackmeta';meta.textContent=(t.author||'TikTok')+' · '+(t.size?Math.max(1,Math.round(t.size/1024/1024))+' MB':'MP3');info.append(name,meta);const del=document.createElement('button');del.className='remove';del.textContent='✕';del.title='Xóa khỏi playlist';del.addEventListener('click',e=>{e.stopPropagation();removeTrack(t.id)});row.append(ic,info,del);root.append(row)})}
+function render(){const root=$('playlist');root.replaceChildren();$('count').textContent=tracks.length+' TRACKS';if(!tracks.length){const e=document.createElement('div');e.className='empty';e.textContent='Playlist đang trống';root.append(e);return}tracks.forEach((t,i)=>{const row=document.createElement('div');row.className='track'+(i===current?' active':'');row.addEventListener('click',()=>playTrack(i));const ic=document.createElement('div');ic.className='trackicon';ic.textContent='♫';const info=document.createElement('div');info.className='trackinfo';const name=document.createElement('div');name.className='trackname';name.textContent=t.title||'TikTok video';const meta=document.createElement('div');meta.className='trackmeta';meta.textContent=(t.author||'TikTok')+' · '+(t.size?Math.max(1,Math.round(t.size/1024/1024))+' MB':'MP3');info.append(name,meta);const del=document.createElement('button');del.className='remove';del.textContent='✕';del.title='Xóa khỏi playlist';del.addEventListener('click',e=>{e.stopPropagation();removeTrack(t.id)});row.append(ic,info,del);root.append(row)})}
 async function removeTrack(id){const i=tracks.findIndex(t=>t.id===id);if(i<0)return;const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).delete(id);tx.oncomplete=async()=>{if(i===current){audio.pause();audio.removeAttribute('src');audio.load();current=-1;$('trackTitle').textContent='Chưa chọn bài hát';$('trackArtist').textContent='Thêm một link TikTok để bắt đầu';updatePlay()}else if(i<current)current--;await load();if(shuffle){shuffleHistory=[];rebuildShuffleBag(false)}}}
 function updatePlay(){$('play').textContent=audio.paused?'▶':'Ⅱ'}
-function updateMedia(t){if(!('mediaSession'in navigator))return;try{navigator.mediaSession.metadata=new MediaMetadata({title:t.title||'TikTok audio',artist:t.author||'TikTok',album:'Afterglow'});navigator.mediaSession.setActionHandler('play',()=>audio.play());navigator.mediaSession.setActionHandler('pause',()=>audio.pause());navigator.mediaSession.setActionHandler('previoustrack',prev);navigator.mediaSession.setActionHandler('nexttrack',next);navigator.mediaSession.setActionHandler('seekbackward',d=>audio.currentTime=Math.max(0,audio.currentTime-(d.seekOffset||10)));navigator.mediaSession.setActionHandler('seekforward',d=>audio.currentTime=Math.min(audio.duration||Infinity,audio.currentTime+(d.seekOffset||10)));navigator.mediaSession.setActionHandler('seekto',d=>{if(Number.isFinite(d.seekTime))audio.currentTime=d.seekTime})}catch(e){}}
+function updateMedia(t){if(!('mediaSession'in navigator))return;try{navigator.mediaSession.metadata=new MediaMetadata({title:t.title||'TikTok video',artist:t.author||'TikTok',album:'Afterglow',artwork:[{src:t.cover||DEFAULT_COVER,sizes:'512x512'}]});navigator.mediaSession.setActionHandler('play',()=>audio.play());navigator.mediaSession.setActionHandler('pause',()=>audio.pause());navigator.mediaSession.setActionHandler('previoustrack',prev);navigator.mediaSession.setActionHandler('nexttrack',next);navigator.mediaSession.setActionHandler('seekbackward',d=>audio.currentTime=Math.max(0,audio.currentTime-(d.seekOffset||10)));navigator.mediaSession.setActionHandler('seekforward',d=>audio.currentTime=Math.min(audio.duration||Infinity,audio.currentTime+(d.seekOffset||10)));navigator.mediaSession.setActionHandler('seekto',d=>{if(Number.isFinite(d.seekTime))audio.currentTime=d.seekTime})}catch(e){}}
 async function getPlaybackUrl(fileName){const r=await fetch(API+'/api/play-token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fileName})});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Không lấy được link phát nhạc.');return j.url}
 function shuffled(items){const a=items.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function rebuildShuffleBag(includeCurrent=false){const ids=tracks.map((_,i)=>i).filter(i=>includeCurrent||i!==current);shuffleBag=shuffle?shuffled(ids):[]}
 function startNextShuffleCycle(){const ids=tracks.map((_,i)=>i);shuffleBag=shuffled(ids);if(shuffleBag.length>1&&shuffleBag[0]===current){const j=1+Math.floor(Math.random()*(shuffleBag.length-1));[shuffleBag[0],shuffleBag[j]]=[shuffleBag[j],shuffleBag[0]]}}
-async function playTrack(i,options={}){if(i<0||i>=tracks.length)return;const fromHistory=!!options.fromHistory,preserveShuffle=!!options.preserveShuffle;if(shuffle&&current>=0&&current!==i&&!fromHistory)shuffleHistory.push(current);current=i;if(shuffle&&!preserveShuffle&&!fromHistory){shuffleHistory=[];rebuildShuffleBag(false)}const t=tracks[i];render();$('trackTitle').textContent=t.title||'TikTok video';$('trackArtist').textContent=t.author||'TikTok · MP3';status('Đang lấy đường dẫn phát nhạc…');try{const url=await getPlaybackUrl(t.fileName);audio.src=url;updateMedia(t);await audio.play();status('Đang phát từ thư viện Afterglow.')}catch(e){status(e.message||'Không thể phát bài hát.',true)}}
+async function playTrack(i,options={}){
+ if(i<0||i>=tracks.length)return;
+ const fromHistory=!!options.fromHistory,preserveShuffle=!!options.preserveShuffle;
+ if(shuffle&&current>=0&&current!==i&&!fromHistory)shuffleHistory.push(current);
+ current=i;
+ if(shuffle&&!preserveShuffle&&!fromHistory){shuffleHistory=[];rebuildShuffleBag(false)}
+ let t=tracks[i];
+ render();
+ $('trackTitle').textContent=t.title||'TikTok video';
+ $('trackArtist').textContent=t.author||'TikTok · MP3';
+ $('coverImg').src=t.cover||DEFAULT_COVER;
+ status('Đang lấy thông tin bài hát…');
+ try{
+  t=await enrichSavedTrack(t);
+  if(current!==i)return;
+  $('trackTitle').textContent=t.title||'TikTok video';
+  $('trackArtist').textContent=t.author||'TikTok · MP3';
+  $('coverImg').src=t.cover||DEFAULT_COVER;
+  render();
+  status('Đang lấy đường dẫn phát nhạc…');
+  const url=await getPlaybackUrl(t.fileName);
+  if(current!==i)return;
+  audio.src=url;
+  updateMedia(t);
+  await audio.play();
+  status('Đang phát từ thư viện Afterglow.');
+ }catch(e){status(e.message||'Không thể phát bài hát.',true)}
+}
 function next(){if(!tracks.length)return;if(shuffle){if(!shuffleBag.length){if(repeat!==2)return;startNextShuffleCycle()}const n=shuffleBag.shift();if(Number.isInteger(n))playTrack(n,{preserveShuffle:true});return}let n=current+1;if(current<0)n=0;if(n>=tracks.length){if(repeat===2)n=0;else return}playTrack(n,{preserveShuffle:true})}
 function prev(){if(!tracks.length)return;if(audio.currentTime>3){audio.currentTime=0;return}if(shuffle&&shuffleHistory.length){shuffleBag.unshift(current);const n=shuffleHistory.pop();playTrack(n,{preserveShuffle:true,fromHistory:true});return}playTrack(current<=0?tracks.length-1:current-1)}
-async function fetchTikTokMetadata(url){try{const endpoint='https://www.tiktok.com/oembed?url='+encodeURIComponent(url);const r=await fetch(endpoint,{credentials:'omit'});if(!r.ok)return null;const data=await r.json();return{title:typeof data.title==='string'?data.title.trim():'',author:typeof data.author_name==='string'?data.author_name.trim():''}}catch(e){console.warn('TikTok oEmbed metadata unavailable:',e);return null}}
-async function importTrack(){if(busy)return;const url=$('tiktokUrl').value.trim();if(!url){status('Hãy dán link TikTok trước.',true);return}if(!/^https?:\/\/(www\.)?(vm\.|vt\.)?tiktok\.com\//i.test(url)){status('Link TikTok không hợp lệ.',true);return}if(!turnstileToken){status('Hãy hoàn thành xác minh bảo mật trước khi import.',true);return}busy=true;$('add').disabled=true;$('add').textContent='Đang import…';status('Đang lấy tiêu đề video và lưu MP3…');try{const metadataPromise=fetchTikTokMetadata(url);const r=await fetch(API+'/api/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,turnstileToken})});const j=await r.json();const metadata=await metadataPromise;if(!r.ok||!j.ok)throw new Error(j.error||'Import thất bại.');if(!j.file||!j.file.fileName)throw new Error('Máy chủ không trả về thông tin MP3.');const title=(metadata&&metadata.title)||(j.file.title)||(j.title)||'TikTok video';const author=(metadata&&metadata.author)||(j.file.author)||(j.author)||'TikTok';const id=await addRecord({fileName:j.file.fileName,title,author,size:j.file.size||0,sourceUrl:url});await load();$('tiktokUrl').value='';turnstileToken='';if(window.turnstile&&turnstileWidget!==null)turnstile.reset(turnstileWidget);const i=tracks.findIndex(t=>t.id===id);status('Import thành công. Đã lưu MP3 vào thư viện Afterglow.');if(i>=0)await playTrack(i)}catch(e){status(e.message||'Không thể import video này.',true);turnstileToken='';if(window.turnstile&&turnstileWidget!==null)turnstile.reset(turnstileWidget)}finally{busy=false;$('add').disabled=!turnstileToken;$('add').textContent='Import MP3'}}
+async function fetchTikTokMetadata(url){
+ try{
+  // Cùng cách Musicbaby lấy caption, nickname và ảnh cover từ TikWM.
+  const endpoint='https://www.tikwm.com/api/?url='+encodeURIComponent(url);
+  const r=await fetch(endpoint,{credentials:'omit'});
+  const payload=await r.json();
+  const data=payload&&payload.data;
+  if(r.ok&&Number(payload.code)===0&&data){
+   const author=data.author&&data.author.nickname;
+   const metadata={
+    title:typeof data.title==='string'?data.title.trim():'',
+    author:typeof author==='string'?author.trim():'',
+    cover:typeof data.cover==='string'&&data.cover?data.cover:
+     (typeof data.origin_cover==='string'&&data.origin_cover?data.origin_cover:
+      (typeof data.dynamic_cover==='string'?data.dynamic_cover:''))
+   };
+   if(metadata.title||metadata.author||metadata.cover)return metadata;
+  }
+ }catch(e){console.warn('TikWM metadata unavailable; trying TikTok oEmbed:',e)}
+ // Dự phòng khi TikWM tạm thời không phản hồi.
+ try{
+  const endpoint='https://www.tiktok.com/oembed?url='+encodeURIComponent(url);
+  const r=await fetch(endpoint,{credentials:'omit'});
+  if(!r.ok)return null;
+  const data=await r.json();
+  return{title:typeof data.title==='string'?data.title.trim():'',
+   author:typeof data.author_name==='string'?data.author_name.trim():'',cover:''};
+ }catch(e){console.warn('TikTok oEmbed metadata unavailable:',e);return null}
+}
+async function enrichSavedTrack(track){
+ const genericTitle=!track.title||/^TikTok (audio|video)( cute)?$/i.test(track.title.trim());
+ const missingCover=!track.cover||track.cover===DEFAULT_COVER;
+ const missingAuthor=!track.author||track.author==='TikTok';
+ if(!track.sourceUrl||(!genericTitle&&!missingCover&&!missingAuthor))return track;
+ const meta=await fetchTikTokMetadata(track.sourceUrl);
+ if(!meta)return track;
+ const patch={};
+ if(genericTitle&&meta.title)patch.title=meta.title;
+ if(missingCover&&meta.cover)patch.cover=meta.cover;
+ if(missingAuthor&&meta.author)patch.author=meta.author;
+ if(!Object.keys(patch).length)return track;
+ const updated={...track,...patch};
+ await new Promise((resolve,reject)=>{
+  const tx=db.transaction(STORE,'readwrite');
+  tx.objectStore(STORE).put(updated);
+  tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+ });
+ const index=tracks.findIndex(item=>item.id===track.id);
+ if(index>=0)tracks[index]=updated;
+ return updated;
+}
+async function importTrack(){if(busy)return;const url=$('tiktokUrl').value.trim();if(!url){status('Hãy dán link TikTok trước.',true);return}if(!/^https?:\/\/(www\.)?(vm\.|vt\.)?tiktok\.com\//i.test(url)){status('Link TikTok không hợp lệ.',true);return}if(!turnstileToken){status('Hãy hoàn thành xác minh bảo mật trước khi import.',true);return}busy=true;$('add').disabled=true;$('add').textContent='Đang import…';status('Đang lấy tiêu đề video và lưu MP3…');try{const metadataPromise=fetchTikTokMetadata(url);const r=await fetch(API+'/api/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,turnstileToken})});const j=await r.json();const metadata=await metadataPromise;if(!r.ok||!j.ok)throw new Error(j.error||'Import thất bại.');if(!j.file||!j.file.fileName)throw new Error('Máy chủ không trả về thông tin MP3.');const title=(metadata&&metadata.title)||(j.file.title)||(j.title)||'TikTok video';const author=(metadata&&metadata.author)||(j.file.author)||(j.author)||'TikTok';const cover=(metadata&&metadata.cover)||(j.file.cover)||(j.cover)||DEFAULT_COVER;const id=await addRecord({fileName:j.file.fileName,title,author,cover,size:j.file.size||0,sourceUrl:url});await load();$('tiktokUrl').value='';turnstileToken='';if(window.turnstile&&turnstileWidget!==null)turnstile.reset(turnstileWidget);const i=tracks.findIndex(t=>t.id===id);status('Import thành công. Đã lưu MP3 vào thư viện Afterglow.');if(i>=0)await playTrack(i)}catch(e){status(e.message||'Không thể import video này.',true);turnstileToken='';if(window.turnstile&&turnstileWidget!==null)turnstile.reset(turnstileWidget)}finally{busy=false;$('add').disabled=!turnstileToken;$('add').textContent='Import MP3'}}
 $('add').addEventListener('click',importTrack);$('play').addEventListener('click',()=>{if(!audio.src){if(tracks.length)playTrack(0);return}if(audio.paused)audio.play().catch(e=>status(e.message,true));else audio.pause()});$('prev').addEventListener('click',prev);$('next').addEventListener('click',next);
 $('shuffle').addEventListener('click',()=>{shuffle=!shuffle;$('shuffle').classList.toggle('active',shuffle);shuffleHistory=[];rebuildShuffleBag(false);$('shuffle').title=shuffle?'Phát ngẫu nhiên: bật':'Phát ngẫu nhiên: tắt'});$('repeat').addEventListener('click',()=>{repeat=(repeat+1)%3;$('repeat').classList.toggle('active',repeat!==0);$('repeat').textContent=repeat===1?'↻1':'↻';$('repeat').title=repeat===0?'Lặp lại: tắt':repeat===1?'Lặp lại bài hiện tại':'Lặp lại playlist'+(shuffle?' · xáo trộn từng lượt':'')});
 audio.addEventListener('play',()=>{updatePlay();document.body.classList.add('is-playing')});audio.addEventListener('pause',()=>{updatePlay();document.body.classList.remove('is-playing')});audio.addEventListener('timeupdate',()=>{if(!seekDrag&&Number.isFinite(audio.duration)&&audio.duration>0)$('progress').value=audio.currentTime/audio.duration*1000;$('elapsed').textContent=time(audio.currentTime);$('total').textContent=time(audio.duration);if('mediaSession'in navigator&&Number.isFinite(audio.duration)&&audio.duration>0&&navigator.mediaSession.setPositionState){try{navigator.mediaSession.setPositionState({duration:audio.duration,playbackRate:audio.playbackRate,position:audio.currentTime})}catch(e){}}});audio.addEventListener('loadedmetadata',()=>{$('total').textContent=time(audio.duration)});audio.addEventListener('ended',()=>{if(repeat===1){audio.currentTime=0;audio.play()}else next()});audio.addEventListener('error',()=>status('Không tải được MP3. Hãy thử phát lại để tạo đường dẫn mới.',true));
