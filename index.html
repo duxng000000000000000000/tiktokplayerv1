@@ -205,6 +205,7 @@ const API='https://afterglow-api.dunginlon.workers.dev';
 const SITEKEY='0x4AAAAAAFv__fKuyP2EbSeK';
 const DB='AfterglowMP3LibraryV1',STORE='tracks',DEFAULT_COVER='https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f38a.png';
 const $=id=>document.getElementById(id),audio=$('audio');
+$('coverImg').addEventListener('error',()=>{const img=$('coverImg');if(img.src!==DEFAULT_COVER)img.src=DEFAULT_COVER});
 let db,tracks=[],current=-1,shuffle=false,repeat=0,timer=null,turnstileWidget=null,turnstileToken='',busy=false,seekDrag=false,shuffleBag=[],shuffleHistory=[];
 function status(msg,error=false){$('status').classList.toggle('error',error);$('status').lastElementChild.textContent=msg}
 function time(v){if(!Number.isFinite(v)||v<0)return '00:00';return String(Math.floor(v/60)).padStart(2,'0')+':'+String(Math.floor(v%60)).padStart(2,'0')}
