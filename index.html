@@ -7,6 +7,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Afterglow">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/svg+xml" href="./afterglow-icon.svg">
+<link rel="icon" type="image/jpeg" sizes="1080x1080" href="./IMG_20261104_103030_467.jpg">
+<link rel="apple-touch-icon" href="./IMG_20261104_103030_467.jpg">
 <title>Afterglow — Your music space</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -242,11 +246,22 @@ html body .now .artist{
  html body .now #trackTitle,
  html body .now .tracktitle{font-size:16px!important;line-height:1.35!important}
 }
+#startupSplash{position:fixed;inset:0;z-index:2147483647;background:#050505;opacity:1;visibility:visible;transition:opacity 1.3s ease;overflow:hidden}
+#startupSplash.is-fading{opacity:0;pointer-events:none}
+#startupSplash img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 50%;user-select:none;-webkit-user-drag:none}
+#startupAudioHint{position:absolute;left:0;right:0;bottom:calc(25px + env(safe-area-inset-bottom));padding:10px 16px;text-align:center;color:rgba(255,255,255,.78);font:11px 'DM Mono',monospace;letter-spacing:.08em;text-shadow:0 1px 8px #000;opacity:1;transition:opacity .3s ease}
+#startupSplash.is-playing #startupAudioHint{opacity:0}
+@media(prefers-reduced-motion:reduce){#startupSplash{transition-duration:.15s}}
 
 </style>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 </head>
 <body data-theme="midnight">
+<div id="startupSplash" role="button" tabindex="0" aria-label="Chạm để phát âm thanh mở đầu">
+ <img src="./IMG_20261104_103054_675.jpg" alt="">
+ <span id="startupAudioHint">CHẠM ĐỂ BẬT ÂM THANH</span>
+</div>
+<audio id="startupAudio" preload="auto" playsinline src="./kitagawa_marin_message.mp3"></audio>
 <div class="shell">
 <header class="topbar">
  <div class="brand"><div class="mark">◌</div><div><div class="brandname">AFTERGLOW</div><div class="sub">YOUR PERSONAL MUSIC SPACE</div></div></div>
@@ -567,6 +582,41 @@ function cancelTimer(){if(timer)clearTimeout(timer);timer=null;$('timerStatus').
 document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{document.body.dataset.theme=b.dataset.theme;localStorage.setItem('afterglow-theme',b.dataset.theme);document.querySelectorAll('[data-theme]').forEach(x=>x.classList.toggle('active',x===b))}));const saved=localStorage.getItem('afterglow-theme');if(['midnight','moss','dusk','musicbaby'].includes(saved)){document.body.dataset.theme=saved;document.querySelectorAll('[data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===saved))}
 function onTurnstileLoad(){try{if(!window.turnstile||typeof turnstile.render!=='function')throw new Error('Cloudflare API chưa sẵn sàng');turnstileWidget=turnstile.render('#turnstile',{sitekey:SITEKEY,theme:'dark',callback:token=>{turnstileToken=token;$('add').disabled=false;status('Xác minh bảo mật thành công.')},'expired-callback':()=>{turnstileToken='';$('add').disabled=true;status('Mã xác minh đã hết hạn. Hãy xác minh lại.',true)},'error-callback':code=>{turnstileToken='';$('add').disabled=true;status('Cloudflare CAPTCHA lỗi mã '+String(code)+'. Kiểm tra hostname/sitekey hoặc thử tắt VPN, trình chặn quảng cáo.',true);console.error('Turnstile error:',code);return true}});status('Đã tải CAPTCHA. Đang xác minh bảo mật…')}catch(e){turnstileToken='';$('add').disabled=true;status('Không khởi tạo được CAPTCHA: '+e.message,true);console.error(e)}}
 function turnstileScriptFailed(){turnstileToken='';$('add').disabled=true;status('Không tải được script Cloudflare CAPTCHA. Mạng hoặc trình duyệt có thể đang chặn challenges.cloudflare.com.',true)}
+function startColdLaunchIntro(){
+ const splash=$('startupSplash'),intro=$('startupAudio');
+ if(!splash||!intro)return;
+ let dismissed=false,waitingForGesture=false;
+ function dismiss(){
+  if(dismissed)return;
+  dismissed=true;
+  splash.classList.add('is-fading');
+  setTimeout(()=>{
+   splash.remove();
+   intro.pause();
+   intro.removeAttribute('src');
+   intro.load();
+  },1350);
+ }
+ function retryOnGesture(){
+  if(dismissed||waitingForGesture)return;
+  waitingForGesture=true;
+  const retry=()=>{waitingForGesture=false;tryPlay()};
+  splash.addEventListener('pointerdown',retry,{once:true});
+  splash.addEventListener('keydown',retry,{once:true});
+ }
+ function tryPlay(){
+  if(dismissed||!intro.paused)return;
+  try{
+   const result=intro.play();
+   if(result&&typeof result.catch==='function')result.catch(retryOnGesture);
+  }catch(e){retryOnGesture()}
+ }
+ intro.addEventListener('playing',()=>splash.classList.add('is-playing'),{once:true});
+ intro.addEventListener('ended',dismiss,{once:true});
+ intro.addEventListener('error',dismiss,{once:true});
+ tryPlay();
+}
+startColdLaunchIntro();
 openDB().then(()=>{if(tracks.length)preloadTrackMedia(0,true,true)}).catch(e=>status('Không mở được playlist: '+e.message,true));
 </script>
 </body>
