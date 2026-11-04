@@ -260,7 +260,7 @@ html body .now .artist{
     <img id="coverImg" src="https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f38a.png" alt="Ảnh bìa bài hát">
    </div>
    <div class="tracktitle" id="trackTitle">Chưa chọn bài hát</div><div class="artist" id="trackArtist">Thêm một link TikTok để bắt đầu</div>
-   <audio id="audio" preload="metadata"></audio>
+   <audio id="audio" preload="auto"></audio>
    <input class="progress" id="progress" type="range" min="0" max="1000" value="0" aria-label="Tua bài hát">
    <div class="times"><span id="elapsed">00:00</span><span id="total">00:00</span></div>
    <div class="controls">
@@ -414,10 +414,41 @@ async function prepareAudioOutput(url){
  if(!normalizerConnected)audio.removeAttribute('crossorigin');
  return false;
 }
-function prefetchPlaybackForIndex(index,probeCors=false){
+let mediaWarmup=null,mediaWarmupIndex=-1,mediaWarmupUrl='';
+function preloadTrackMedia(index,useMainAudio=false,probeCors=false){
  const t=tracks[index];
- if(!t||!t.fileName)return;
- getPlaybackUrl(t.fileName).then(url=>{if(probeCors&&!normalizerCorsVerified)verifyAudioCors(url)}).catch(()=>{});
+ if(!t||!t.fileName)return Promise.resolve();
+ return getPlaybackUrl(t.fileName).then(async url=>{
+  if(probeCors&&!normalizerCorsVerified){
+   const ok=await verifyAudioCors(url);
+   if(!ok)return;
+  }
+  if(!normalizerCorsVerified)return;
+  if(useMainAudio){
+   audio.crossOrigin='anonymous';
+   connectAudioNormalizer();
+   audio.preload='auto';
+   if(audio.src!==url){audio.src=url;audio.load()}
+   return;
+  }
+  if(mediaWarmup&&mediaWarmupIndex===index&&mediaWarmupUrl===url)return;
+  if(mediaWarmup){
+   mediaWarmup.pause();
+   mediaWarmup.removeAttribute('src');
+   mediaWarmup.load();
+  }
+  const warm=new Audio();
+  warm.crossOrigin='anonymous';
+  warm.preload='auto';
+  warm.src=url;
+  warm.load();
+  mediaWarmup=warm;
+  mediaWarmupIndex=index;
+  mediaWarmupUrl=url;
+ }).catch(()=>{});
+}
+function prefetchPlaybackForIndex(index,probeCors=false){
+ return preloadTrackMedia(index,false,probeCors);
 }
 function nextPlaybackIndex(){
  if(current<0||repeat===1)return-1;
@@ -427,7 +458,7 @@ function nextPlaybackIndex(){
 }
 function prefetchNextPlayback(){
  const nextIndex=nextPlaybackIndex();
- if(nextIndex>=0)prefetchPlaybackForIndex(nextIndex,false);
+ if(nextIndex>=0)preloadTrackMedia(nextIndex,false,false);
 }
 function shuffled(items){const a=items.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function rebuildShuffleBag(includeCurrent=false){const ids=tracks.map((_,i)=>i).filter(i=>includeCurrent||i!==current);shuffleBag=shuffle?shuffled(ids):[]}
@@ -458,7 +489,12 @@ async function playTrack(i,options={}){
   status('Đang chuẩn bị âm thanh…');
   await prepareAudioOutput(url);
   if(current!==i)return;
-  audio.src=url;
+  if(audio.src!==url){
+   audio.src=url;
+   audio.load();
+  }else{
+   try{audio.currentTime=0}catch(e){}
+  }
   updateMedia(t);
   await audio.play();
   status(normalizerConnected?'Đang phát · cân bằng âm lượng tự động.':'Đang phát từ thư viện Afterglow.');
@@ -527,7 +563,7 @@ function cancelTimer(){if(timer)clearTimeout(timer);timer=null;$('timerStatus').
 document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{document.body.dataset.theme=b.dataset.theme;localStorage.setItem('afterglow-theme',b.dataset.theme);document.querySelectorAll('[data-theme]').forEach(x=>x.classList.toggle('active',x===b))}));const saved=localStorage.getItem('afterglow-theme');if(['midnight','moss','dusk','musicbaby'].includes(saved)){document.body.dataset.theme=saved;document.querySelectorAll('[data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===saved))}
 function onTurnstileLoad(){try{if(!window.turnstile||typeof turnstile.render!=='function')throw new Error('Cloudflare API chưa sẵn sàng');turnstileWidget=turnstile.render('#turnstile',{sitekey:SITEKEY,theme:'dark',callback:token=>{turnstileToken=token;$('add').disabled=false;status('Xác minh bảo mật thành công.')},'expired-callback':()=>{turnstileToken='';$('add').disabled=true;status('Mã xác minh đã hết hạn. Hãy xác minh lại.',true)},'error-callback':code=>{turnstileToken='';$('add').disabled=true;status('Cloudflare CAPTCHA lỗi mã '+String(code)+'. Kiểm tra hostname/sitekey hoặc thử tắt VPN, trình chặn quảng cáo.',true);console.error('Turnstile error:',code);return true}});status('Đã tải CAPTCHA. Đang xác minh bảo mật…')}catch(e){turnstileToken='';$('add').disabled=true;status('Không khởi tạo được CAPTCHA: '+e.message,true);console.error(e)}}
 function turnstileScriptFailed(){turnstileToken='';$('add').disabled=true;status('Không tải được script Cloudflare CAPTCHA. Mạng hoặc trình duyệt có thể đang chặn challenges.cloudflare.com.',true)}
-openDB().then(()=>{if(tracks.length)prefetchPlaybackForIndex(0,true)}).catch(e=>status('Không mở được playlist: '+e.message,true));
+openDB().then(()=>{if(tracks.length)preloadTrackMedia(0,true,true)}).catch(e=>status('Không mở được playlist: '+e.message,true));
 </script>
 </body>
 </html>
