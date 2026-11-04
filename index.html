@@ -405,10 +405,11 @@ function startAudioNormalization(){
  normalizerTimer=setInterval(updateAudioNormalization,160);
 }
 async function prepareAudioOutput(url){
- const corsOk=await verifyAudioCors(url);
- if(corsOk&&connectAudioNormalizer()){
-  audio.crossOrigin='anonymous';
-  return true;
+ // CORS is probed in the background during playlist warm-up.
+ // Never block the user's Play action on a separate probe request.
+ if(normalizerCorsVerified){
+  if(!audio.crossOrigin)audio.crossOrigin='anonymous';
+  return connectAudioNormalizer();
  }
  if(!normalizerConnected)audio.removeAttribute('crossorigin');
  return false;
