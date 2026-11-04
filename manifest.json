@@ -1,0 +1,25 @@
+{
+  "id": "./",
+  "name": "Afterglow — Your music space",
+  "short_name": "Afterglow",
+  "description": "Your personal music space",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#10151d",
+  "theme_color": "#10151d",
+  "icons": [
+    {
+      "src": "./afterglow-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./IMG_20261104_103030_467.jpg",
+      "sizes": "1080x1080",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
