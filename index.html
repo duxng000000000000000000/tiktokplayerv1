@@ -413,41 +413,91 @@ async function prepareAudioOutput(url){
  audio.preload='auto';
  return true;
 }
-let mediaWarmup=null,mediaWarmupIndex=-1,mediaWarmupUrl='',mediaWarmupRequest=0;
-function preloadTrackMedia(index){
+// Background playback queue: cache the next tracks as local Blob URLs while the
+// page is still active. This avoids requiring a new network fetch exactly when
+// the current song ends and the phone screen is already locked.
+const mediaBlobCache=new Map();
+const mediaBlobPending=new Map();
+const MEDIA_PREFETCH_COUNT=4;
+
+async function preloadTrackMedia(index){
  const t=tracks[index];
- if(!t||!t.fileName)return Promise.resolve();
- const requestId=++mediaWarmupRequest;
- return getPlaybackUrl(t.fileName).then(url=>{
-  // A newer track was selected while this URL was being prepared.
-  if(requestId!==mediaWarmupRequest)return;
-  if(mediaWarmup&&mediaWarmupIndex===index&&mediaWarmupUrl===url)return;
-  if(mediaWarmup){
-   mediaWarmup.pause();
-   mediaWarmup.removeAttribute('src');
-   mediaWarmup.load();
+ if(!t||!t.fileName)return;
+ if(mediaBlobCache.has(index))return mediaBlobCache.get(index);
+ if(mediaBlobPending.has(index))return mediaBlobPending.get(index);
+
+ const promise=(async()=>{
+  try{
+   const url=await getPlaybackUrl(t.fileName);
+   const response=await fetch(url,{mode:'cors',cache:'force-cache'});
+   if(!response.ok)throw new Error('Prefetch HTTP '+response.status);
+   const blob=await response.blob();
+   if(!blob.size)throw new Error('Prefetch returned an empty file.');
+   const objectUrl=URL.createObjectURL(blob);
+   const item={url,objectUrl,size:blob.size};
+   mediaBlobCache.set(index,item);
+   return item;
+  }catch(error){
+   // Native <audio> can still play directly from the signed URL if this
+   // browser does not allow fetching the file as a Blob.
+   console.warn('Could not cache next track locally:',error);
+   return null;
+  }finally{
+   mediaBlobPending.delete(index);
   }
-  // Use the same native, same-origin media path as the real player.
-  // Do not gate this on the old Web Audio CORS normalizer: normal playback
-  // no longer uses that pipeline, so that check prevented every prefetch.
-  const warm=new Audio();
-  warm.preload='auto';
-  warm.src=url;
-  warm.load();
-  mediaWarmup=warm;
-  mediaWarmupIndex=index;
-  mediaWarmupUrl=url;
- }).catch(error=>console.warn('Could not preload next track:',error));
+ })();
+ mediaBlobPending.set(index,promise);
+ return promise;
 }
+
+function trimMediaBlobCache(){
+ const keep=new Set();
+ for(let offset=0;offset<MEDIA_PREFETCH_COUNT;offset++){
+  let index=-1;
+  if(shuffle){
+   if(shuffleBag[offset]!==undefined)index=shuffleBag[offset];
+   else if(repeat===2&&tracks.length)index=shuffleBag[offset%Math.max(1,shuffleBag.length)];
+  }else if(current>=0){
+   index=current+1+offset;
+   if(index>=tracks.length&&repeat===2&&tracks.length)index%=tracks.length;
+  }
+  if(index>=0)keep.add(index);
+ }
+ keep.add(current);
+ for(const [index,item] of mediaBlobCache){
+  if(!keep.has(index)){
+   try{URL.revokeObjectURL(item.objectUrl)}catch(e){}
+   mediaBlobCache.delete(index);
+  }
+ }
+}
+
 function nextPlaybackIndex(){
  if(current<0||repeat===1)return-1;
  if(shuffle)return shuffleBag.length?shuffleBag[0]:-1;
  const n=current+1;
  return n<tracks.length?n:(repeat===2&&tracks.length?0:-1);
 }
+
 function prefetchNextPlayback(){
- const nextIndex=nextPlaybackIndex();
- if(nextIndex>=0)preloadTrackMedia(nextIndex);
+ const indexes=[];
+ if(current<0)return;
+ if(shuffle){
+  for(let i=0;i<Math.min(MEDIA_PREFETCH_COUNT,shuffleBag.length);i++){
+   if(Number.isInteger(shuffleBag[i]))indexes.push(shuffleBag[i]);
+  }
+ }else{
+  for(let offset=1;offset<=MEDIA_PREFETCH_COUNT;offset++){
+   let index=current+offset;
+   if(index>=tracks.length){
+    if(repeat===2&&tracks.length)index%=tracks.length;
+    else break;
+   }
+   indexes.push(index);
+  }
+ }
+ trimMediaBlobCache();
+ indexes.forEach(index=>preloadTrackMedia(index));
 }
 function shuffled(items){const a=items.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function rebuildShuffleBag(includeCurrent=false){const ids=tracks.map((_,i)=>i).filter(i=>includeCurrent||i!==current);shuffleBag=shuffle?shuffled(ids):[]}
@@ -473,7 +523,8 @@ async function playTrack(i,options={}){
   $('coverImg').src=t.cover||DEFAULT_COVER;
   render();
   status('Đang lấy đường dẫn phát nhạc…');
-  const url=await getPlaybackUrl(t.fileName);
+  const cachedMedia=mediaBlobCache.get(i);
+  const url=cachedMedia?cachedMedia.objectUrl:await getPlaybackUrl(t.fileName);
   if(current!==i)return;
   status('Đang chuẩn bị âm thanh…');
   await prepareAudioOutput(url);
@@ -617,7 +668,7 @@ function onTurnstileLoad(){
  }catch(e){turnstileToken='';refreshImportReady();status('Không khởi tạo được CAPTCHA: '+e.message,true);console.error(e)}
 }
 function turnstileScriptFailed(){if(importSessionToken){refreshImportReady();return}turnstileToken='';$('add').disabled=true;status('Không tải được script Cloudflare CAPTCHA. Hãy thử lại hoặc kiểm tra mạng.',true)}
-openDB().then(()=>{refreshImportReady();if(tracks.length)preloadTrackMedia(0)}).catch(e=>status('Không mở được playlist: '+e.message,true));
+openDB().then(()=>{refreshImportReady();if(tracks.length){current=-1;preloadTrackMedia(0);preloadTrackMedia(1);preloadTrackMedia(2);preloadTrackMedia(3)}}).catch(e=>status('Không mở được playlist: '+e.message,true));
 </script>
 </body>
 </html>
