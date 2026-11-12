@@ -418,7 +418,11 @@ async function prepareAudioOutput(url){
 // the current song ends and the phone screen is already locked.
 const mediaBlobCache=new Map();
 const mediaBlobPending=new Map();
-const MEDIA_PREFETCH_COUNT=4;
+// Keep a larger queue ready before the app is backgrounded. Android can throttle
+// or freeze background page tasks, so waiting until "ended" to fetch the next
+// track is unreliable.
+const MEDIA_PREFETCH_COUNT=12;
+let backgroundPlaybackPreparing=false;
 
 async function preloadTrackMedia(index){
  const t=tracks[index];
@@ -497,7 +501,27 @@ function prefetchNextPlayback(){
   }
  }
  trimMediaBlobCache();
+ // Start downloads while the page is active. Do not await them here.
  indexes.forEach(index=>preloadTrackMedia(index));
+}
+
+async function prepareBackgroundPlaybackQueue(){
+ if(backgroundPlaybackPreparing||current<0)return;
+ backgroundPlaybackPreparing=true;
+ try{
+  await Promise.all(
+   Array.from({length:MEDIA_PREFETCH_COUNT},(_,n)=>{
+    let index=current+n+1;
+    if(index>=tracks.length){
+     if(repeat===2&&tracks.length)index%=tracks.length;
+     else return Promise.resolve();
+    }
+    return preloadTrackMedia(index);
+   })
+  );
+ }finally{
+  backgroundPlaybackPreparing=false;
+ }
 }
 function shuffled(items){const a=items.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function rebuildShuffleBag(includeCurrent=false){const ids=tracks.map((_,i)=>i).filter(i=>includeCurrent||i!==current);shuffleBag=shuffle?shuffled(ids):[]}
@@ -641,7 +665,35 @@ audio.addEventListener('play',()=>{updatePlay();document.body.classList.add('is-
 audio.addEventListener('pause',()=>{updatePlay();document.body.classList.remove('is-playing');if('mediaSession'in navigator){try{navigator.mediaSession.playbackState='paused'}catch(e){}}});
 audio.addEventListener('timeupdate',()=>{if(!seekDrag&&Number.isFinite(audio.duration)&&audio.duration>0)$('progress').value=audio.currentTime/audio.duration*1000;$('elapsed').textContent=time(audio.currentTime);$('total').textContent=time(audio.duration);if('mediaSession'in navigator&&Number.isFinite(audio.duration)&&audio.duration>0&&navigator.mediaSession.setPositionState){try{navigator.mediaSession.setPositionState({duration:audio.duration,playbackRate:audio.playbackRate,position:audio.currentTime})}catch(e){}}});
 audio.addEventListener('loadedmetadata',()=>{$('total').textContent=time(audio.duration)});
-audio.addEventListener('ended',async()=>{if(repeat===1){audio.currentTime=0;try{await audio.play()}catch(e){status('Không thể tiếp tục phát tự động: '+e.message,true)}}else{await next({backgroundTransition:true})}});
+audio.addEventListener('ended',async()=>{
+ if(repeat===1){
+  audio.currentTime=0;
+  try{await audio.play()}catch(e){status('Không thể tiếp tục phát tự động: '+e.message,true)}
+ }else{
+  await next({backgroundTransition:true});
+ }
+});
+// Prepare the upcoming queue before Android throttles/freezes the page.
+document.addEventListener('visibilitychange',()=>{
+ if(document.visibilityState==='hidden'){
+  if(audioContext&&audioContext.state==='suspended')audioContext.resume().catch(()=>{});
+  prepareBackgroundPlaybackQueue().catch(()=>{});
+ }else{
+  if(audioContext&&audioContext.state==='suspended')audioContext.resume().catch(()=>{});
+  if(current>=0)prefetchNextPlayback();
+ }
+});
+if('mediaSession' in navigator){
+ try{
+  navigator.mediaSession.setActionHandler('play',()=>audio.play().catch(()=>{}));
+  navigator.mediaSession.setActionHandler('pause',()=>audio.pause());
+  navigator.mediaSession.setActionHandler('nexttrack',()=>next({backgroundTransition:true}));
+  navigator.mediaSession.setActionHandler('previoustrack',()=>prev());
+  navigator.mediaSession.setActionHandler('seekbackward',d=>audio.currentTime=Math.max(0,audio.currentTime-(d.seekOffset||10)));
+  navigator.mediaSession.setActionHandler('seekforward',d=>audio.currentTime=Math.min(audio.duration||Infinity,audio.currentTime+(d.seekOffset||10)));
+  navigator.mediaSession.setActionHandler('seekto',d=>{if(Number.isFinite(d.seekTime))audio.currentTime=d.seekTime});
+ }catch(e){}
+}
 audio.addEventListener('error',()=>status('Không tải được MP3. Hãy thử phát lại để tạo đường dẫn mới.',true));
 $('progress').addEventListener('pointerdown',()=>seekDrag=true);$('progress').addEventListener('pointerup',()=>seekDrag=false);$('progress').addEventListener('change',e=>{if(Number.isFinite(audio.duration))audio.currentTime=Number(e.target.value)/1000*audio.duration;seekDrag=false});
 function cancelTimer(){if(timer)clearTimeout(timer);timer=null;$('timerStatus').textContent='Đã hủy hẹn giờ.'}document.querySelectorAll('[data-min]').forEach(b=>b.addEventListener('click',()=>{cancelTimer();const m=Number(b.dataset.min);$('timerStatus').textContent='Nhạc sẽ tự dừng sau '+m+' phút.';timer=setTimeout(()=>{audio.pause();timer=null;$('timerStatus').textContent='Đã dừng nhạc theo hẹn giờ.'},m*60000)}));
