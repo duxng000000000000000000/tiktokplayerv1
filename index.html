@@ -661,7 +661,11 @@ function setContinuousSegment(cursor,force=false){
  if(cursor<0||cursor>=continuousSegments.length)return;
  if(!force&&cursor===continuousCursor)return;
  if(shuffle&&continuousCursor>=0&&cursor>continuousCursor){
-  for(let n=continuousCursor;n<cursor;n++)shuffleHistory.push(continuousSegments[n].index);
+  for(let n=continuousCursor;n<cursor;n++){
+   const playedIndex=continuousSegments[n].index;
+   shuffleHistory.push(playedIndex);
+   shuffleBag=shuffleBag.filter(index=>index!==playedIndex);
+  }
  }
  continuousCursor=cursor;
  const index=continuousSegments[cursor].index;
@@ -893,6 +897,7 @@ function prev(){
   const target=continuousCursor-1;
   if(target>=0){audio.currentTime=continuousSegments[target].start+0.02;syncContinuousSegment();return}
   if(shuffle&&shuffleHistory.length){const previous=shuffleHistory.pop();playTrack(previous,{preserveShuffle:true,fromHistory:true});return}
+  if(audio.loop){audio.currentTime=continuousSegments[continuousSegments.length-1].start+0.02;syncContinuousSegment();return}
   if(current>0){playTrack(current-1);return}
   playTrack(tracks.length-1);
   return;
