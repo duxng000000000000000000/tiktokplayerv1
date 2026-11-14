@@ -319,7 +319,7 @@ function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(D
 function load(){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).getAll();r.onsuccess=()=>{tracks=(r.result||[]).sort((a,b)=>a.createdAt-b.createdAt);render();resolve()};r.onerror=()=>reject(r.error)})}
 function addRecord(data){return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite'),r=tx.objectStore(STORE).add({...data,createdAt:Date.now()});r.onsuccess=()=>resolve(r.result);tx.onerror=()=>reject(tx.error)})}
 function readCachedAudio(fileName){return new Promise((resolve,reject)=>{const tx=db.transaction(MEDIA_STORE,'readonly'),r=tx.objectStore(MEDIA_STORE).get(fileName);r.onsuccess=()=>resolve(r.result&&r.result.blob instanceof Blob?r.result.blob:null);r.onerror=()=>reject(r.error)})}
-function saveCachedAudio(fileName,blob){return new Promise((resolve,reject)=>{const tx=db.transaction(MEDIA_STORE,'readwrite');tx.objectStore(MEDIA_STORE).put({fileName,blob,size:blob.size,savedAt:Date.now()});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('Không lưu được audio vào bộ nhớ thiết bị.'))})}
+function saveCachedAudio(fileName,blob){return new Promise((resolve,reject)=>{const tx=db.transaction(MEDIA_STORE,'readwrite');tx.objectStore(MEDIA_STORE).put({fileName,blob,size:blob.size,savedAt:Date.now()});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('Không lưu được audio vào bộ nhớ thiết bị.'))})}function deleteCachedAudio(fileName){return new Promise(resolve=>{try{const tx=db.transaction(MEDIA_STORE,'readwrite');tx.objectStore(MEDIA_STORE).delete(fileName);tx.oncomplete=()=>resolve();tx.onerror=()=>resolve();tx.onabort=()=>resolve()}catch(e){resolve()}})}
 async function getTrackAudioBlob(track){
  if(!track||!track.fileName)throw new Error('Bài hát không có fileName hợp lệ.');
  try{const cached=await readCachedAudio(track.fileName);if(cached&&cached.size)return cached}catch(error){console.warn('Audio cache read failed:',error)}
@@ -1056,7 +1056,29 @@ if('mediaSession' in navigator){
   navigator.mediaSession.setActionHandler('seekto',d=>mediaSeekTo(d.seekTime));
  }catch(e){}
 }
-audio.addEventListener('error',()=>status('Không tải được MP3. Hãy thử phát lại để tạo đường dẫn mới.',true));
+let audioRecoveryBusy=false;
+audio.addEventListener('error',async()=>{
+ if(audioRecoveryBusy||current<0||!tracks[current]){
+  status('Không tải được MP3. Hãy thử phát lại.',true);
+  return;
+ }
+ audioRecoveryBusy=true;
+ const failedIndex=current;
+ const failedFile=tracks[failedIndex].fileName;
+ try{
+  status('Đang làm mới đường dẫn MP3 và thử phát lại…');
+  const cached=mediaBlobCache.get(failedIndex);
+  if(cached){try{URL.revokeObjectURL(cached.objectUrl)}catch(e){}mediaBlobCache.delete(failedIndex)}
+  await deleteCachedAudio(failedFile);
+  playbackUrlCache.delete(failedFile);
+  playbackUrlPending.delete(failedFile);
+  await playTrack(failedIndex,{preserveShuffle:true,skipEnrich:true});
+ }catch(error){
+  status(error.message||'Không thể tải lại MP3. Hãy thử Play lại.',true);
+ }finally{
+  audioRecoveryBusy=false;
+ }
+});
 $('progress').addEventListener('pointerdown',()=>seekDrag=true);$('progress').addEventListener('pointerup',()=>seekDrag=false);$('progress').addEventListener('change',e=>{const value=Number(e.target.value)/1000;if(continuousMode&&continuousSegments[continuousCursor]){const segment=continuousSegments[continuousCursor];audio.currentTime=segment.start+value*(segment.end-segment.start)}else if(Number.isFinite(audio.duration))audio.currentTime=value*audio.duration;seekDrag=false});
 function cancelTimer(){if(timer)clearTimeout(timer);timer=null;$('timerStatus').textContent='Đã hủy hẹn giờ.'}document.querySelectorAll('[data-min]').forEach(b=>b.addEventListener('click',()=>{cancelTimer();const m=Number(b.dataset.min);$('timerStatus').textContent='Nhạc sẽ tự dừng sau '+m+' phút.';timer=setTimeout(()=>{audio.pause();timer=null;$('timerStatus').textContent='Đã dừng nhạc theo hẹn giờ.'},m*60000)}));
 document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{document.body.dataset.theme=b.dataset.theme;localStorage.setItem('afterglow-theme',b.dataset.theme);document.querySelectorAll('[data-theme]').forEach(x=>x.classList.toggle('active',x===b))}));const saved=localStorage.getItem('afterglow-theme');if(['midnight','moss','dusk','musicbaby'].includes(saved)){document.body.dataset.theme=saved;document.querySelectorAll('[data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===saved))}
